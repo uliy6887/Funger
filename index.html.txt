@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>舒爾特方格 - 三種尺寸 | 專注力訓練</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #0a0f1a;
+            font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 16px;
+        }
+
+        .game-container {
+            max-width: 600px;
+            width: 100%;
+            background: #0f1219;
+            border-radius: 48px;
+            padding: 18px 16px 28px;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            border: 1px solid #2a2f3a;
+        }
+
+        /* 頭像區 */
+        .profile-area {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: #05080f;
+            padding: 10px 16px;
+            border-radius: 100px;
+            margin-bottom: 20px;
+            border: 1px solid #2c3142;
+        }
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #3eff9e;
+            box-shadow: 0 0 6px #3eff9e;
+            background: #1e2a2a;
+        }
+        .user-info {
+            flex: 1;
+        }
+        .user-name {
+            color: #eef5ff;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-shadow: 0 0 2px #00ffb3;
+        }
+        .user-status {
+            color: #8f9bb5;
+            font-size: 0.7rem;
+        }
+
+        /* 尺寸選擇器 */
+        .size-selector {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .size-btn {
+            background: #121624;
+            border: 1px solid #2e3a48;
+            color: #bfffc9;
+            font-weight: bold;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.1s linear;
+            box-shadow: 0 3px 0 #03060c;
+        }
+        .size-btn.active {
+            background: #1b4b2f;
+            border-color: #3eff9e;
+            color: white;
+            text-shadow: 0 0 2px #aaffcc;
+        }
+        .size-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #03060c;
+        }
+
+        /* 統計面板 */
+        .stats-panel {
+            display: flex;
+            justify-content: space-between;
+            background: #03060c;
+            padding: 10px 16px;
+            border-radius: 48px;
+            margin-bottom: 24px;
+            border: 1px solid #2a2f3e;
+        }
+        .stat {
+            text-align: center;
+            flex: 1;
+        }
+        .stat-label {
+            font-size: 0.65rem;
+            color: #7e8aa5;
+            text-transform: uppercase;
+        }
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #3eff9e;
+            text-shadow: 0 0 4px #00cc77;
+            line-height: 1.2;
+        }
+        #errorCount {
+            color: #ff7760;
+            text-shadow: 0 0 3px #ff3311;
+        }
+
+        /* 動態網格 */
+        .grid {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+        .cell {
+            aspect-ratio: 1 / 1;
+            background: #10131f;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-family: monospace;
+            color: #bfffc9;
+            text-shadow: 0 0 3px #1eff6e;
+            cursor: pointer;
+            transition: 0.08s linear;
+            border: 1px solid #2a3250;
+            box-shadow: 0 6px 0 #03060c;
+            background-image: radial-gradient(circle at 30% 20%, rgba(50, 255, 140, 0.08), transparent);
+        }
+        .cell:active {
+            transform: translateY(2px);
+            box-shadow: 0 3px 0 #03060c;
+        }
+        .cell.completed {
+            background: #0a2e1f;
+            border-color: #3eff9e;
+            color: #a0f0c0;
+            text-decoration: line-through;
+            text-decoration-thickness: 2px;
+            text-decoration-color: #3eff9e;
+            opacity: 0.7;
+            cursor: default;
+            transform: none;
+            box-shadow: 0 2px 0 #03060c;
+        }
+        .cell.error-flash {
+            animation: shakeFlash 0.2s ease-in-out 0s 2;
+            background-color: #6a1a1a;
+            border-color: #ff3333;
+            color: #ffaaaa;
+        }
+        @keyframes shakeFlash {
+            0% { transform: translateX(0px); background: #b22; }
+            25% { transform: translateX(-5px); background: #e44; }
+            75% { transform: translateX(5px); background: #e44; }
+            100% { transform: translateX(0px); background: #a22; }
+        }
+
+        .control-bar {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+        .btn {
+            background: #121624;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #d0f0e0;
+            font-family: inherit;
+            box-shadow: 0 5px 0 #05080c;
+            cursor: pointer;
+            border: 1px solid #2e3a48;
+            flex: 0.4;
+        }
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #05080c;
+        }
+        .btn-primary {
+            background: #1b4b2f;
+            border-color: #3eff9e;
+        }
+        .completion-message {
+            text-align: center;
+            margin-top: 16px;
+            background: #1e2a1f;
+            padding: 8px;
+            border-radius: 60px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #c6ffc1;
+            border-left: 6px solid #3eff9e;
+        }
+        footer {
+            font-size: 0.6rem;
+            text-align: center;
+            margin-top: 20px;
+            color: #4a5270;
+        }
+
+        @media (max-width: 480px) {
+            .grid { gap: 8px; }
+            .cell { font-size: 1.2rem; border-radius: 12px; }
+            .stat-value { font-size: 1.3rem; }
+            .size-btn { padding: 6px 14px; font-size: 0.9rem; }
+        }
+    </style>
+    <script src="https://static.line-scdn.net/liff/edge/versions/2.23.1/sdk.js"></script>
+</head>
+<body>
+<div class="game-container">
+    <!-- LIFF 頭像 -->
+    <div class="profile-area">
+        <img id="avatarImg" class="avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23333'%3E%3Ccircle cx='12' cy='8' r='4' fill='%23666'/%3E%3Cpath d='M12 14c-4 0-6 2-6 4h12c0-2-2-4-6-4z' fill='%23666'/%3E%3C/svg%3E" alt="avatar">
+        <div class="user-info">
+            <div class="user-name" id="userName">Loading LINE...</div>
+            <div class="user-status">⚡ 專注力挑戰</div>
+        </div>
+    </div>
+
+    <!-- 尺寸選擇 -->
+    <div class="size-selector">
+        <button class="size-btn" data-size="3">3x3</button>
+        <button class="size-btn active" data-size="5">5x5</button>
+        <button class="size-btn" data-size="6">6x6</button>
+    </div>
+
+    <!-- 統計 -->
+    <div class="stats-panel">
+        <div class="stat"><div class="stat-label">⏱️ 時間</div><div class="stat-value" id="timerDisplay">0.00</div></div>
+        <div class="stat"><div class="stat-label">🏆 最佳</div><div class="stat-value" id="bestDisplay">--</div></div>
+        <div class="stat"><div class="stat-label">❌ 錯誤</div><div class="stat-value" id="errorCount">0</div></div>
+    </div>
+
+    <!-- 網格容器 -->
+    <div class="grid" id="grid"></div>
+
+    <div class="control-bar">
+        <button class="btn" id="resetBtn">🔄 新的一局</button>
+        <button class="btn btn-primary" id="shuffleBtn">✨ 重新洗牌</button>
+    </div>
+    <div id="messageArea" class="completion-message" style="display: none;"></div>
+    <footer>依序點擊 1 → N | 錯誤會抖動 | 各尺寸獨立最佳紀錄</footer>
+</div>
+
+<script>
+    // ========== 遊戲狀態 ==========
+    let currentSize = 5;          // 3,5,6
+    let currentGrid = [];          // 一維陣列
+    let nextNumber = 1;
+    let gameActive = true;
+    let startTime = null;
+    let timerInterval = null;
+    let errorCount = 0;
+    let bestTimes = {
+        3: localStorage.getItem('bestTime_3') ? parseFloat(localStorage.getItem('bestTime_3')) : null,
+        5: localStorage.getItem('bestTime_5') ? parseFloat(localStorage.getItem('bestTime_5')) : null,
+        6: localStorage.getItem('bestTime_6') ? parseFloat(localStorage.getItem('bestTime_6')) : null
+    };
+
+    // DOM
+    const gridContainer = document.getElementById('grid');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const bestDisplay = document.getElementById('bestDisplay');
+    const errorSpan = document.getElementById('errorCount');
+    const resetBtn = document.getElementById('resetBtn');
+    const shuffleBtn = document.getElementById('shuffleBtn');
+    const messageDiv = document.getElementById('messageArea');
+    const sizeBtns = document.querySelectorAll('.size-btn');
+
+    // 更新最佳顯示
+    function updateBestUI() {
+        const best = bestTimes[currentSize];
+        if (best !== null) bestDisplay.innerText = best.toFixed(2) + ' sec';
+        else bestDisplay.innerText = '--';
+    }
+
+    // 儲存當前尺寸的最佳
+    function saveBestTime(time) {
+        const key = `bestTime_${currentSize}`;
+        if (bestTimes[currentSize] === null || time < bestTimes[currentSize]) {
+            bestTimes[currentSize] = time;
+            localStorage.setItem(key, time);
+            updateBestUI();
+            return true;
+        }
+        return false;
+    }
+
+    // 停止計時
+    function stopTimer() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+    }
+
+    function startTimerIfNeeded() {
+        if (startTime === null && nextNumber === 1 && gameActive) {
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                if (gameActive && startTime) {
+                    const elapsed = (Date.now() - startTime) / 1000;
+                    timerDisplay.innerText = elapsed.toFixed(2);
+                }
+            }, 100);
+        }
+    }
+
+    // 產生亂序數字陣列 (1 ~ total)
+    function generateShuffledArray(total) {
+        const arr = Array.from({ length: total }, (_, i) => i + 1);
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    // 渲染網格
+    function renderGrid() {
+        const size = currentSize;
+        const total = size * size;
+        gridContainer.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+        gridContainer.innerHTML = '';
+        for (let i = 0; i < currentGrid.length; i++) {
+            const num = currentGrid[i];
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            if (num < nextNumber) cell.classList.add('completed');
+            cell.setAttribute('data-index', i);
+            cell.innerText = num;
+            cell.addEventListener('click', (e) => {
+                e.stopPropagation();
+                handleCellClick(i);
+            });
+            gridContainer.appendChild(cell);
+        }
+    }
+
+    // 點擊邏輯
+    function handleCellClick(index) {
+        if (!gameActive) return;
+        const clickedNum = currentGrid[index];
+        if (clickedNum === nextNumber) {
+            // 正確
+            const cellDiv = document.querySelector(`.cell[data-index='${index}']`);
+            if (cellDiv && !cellDiv.classList.contains('completed')) {
+                cellDiv.classList.add('completed');
+            }
+            nextNumber++;
+            startTimerIfNeeded();
+
+            const total = currentSize * currentSize;
+            if (nextNumber > total) {
+                // 遊戲完成
+                gameActive = false;
+                stopTimer();
+                const finalTime = (Date.now() - startTime) / 1000;
+                timerDisplay.innerText = finalTime.toFixed(2);
+                const isRecord = saveBestTime(finalTime);
+                messageDiv.style.display = 'block';
+                messageDiv.innerHTML = `✨ 完成！ 用時 ${finalTime.toFixed(2)} 秒 ${isRecord ? '🎉 新紀錄！ 🎉' : ''}`;
+            }
+        } else {
+            // 錯誤
+            errorCount++;
+            errorSpan.innerText = errorCount;
+            const wrongCell = document.querySelector(`.cell[data-index='${index}']`);
+            if (wrongCell) {
+                wrongCell.classList.add('error-flash');
+                setTimeout(() => wrongCell.classList.remove('error-flash'), 300);
+            }
+        }
+    }
+
+    // 重置遊戲 (可選擇是否保留當前數字)
+    function resetGame(keepNumbers = false) {
+        stopTimer();
+        messageDiv.style.display = 'none';
+        if (!keepNumbers) {
+            const total = currentSize * currentSize;
+            currentGrid = generateShuffledArray(total);
+        }
+        nextNumber = 1;
+        errorCount = 0;
+        errorSpan.innerText = '0';
+        gameActive = true;
+        startTime = null;
+        timerDisplay.innerText = '0.00';
+        renderGrid();
+    }
+
+    // 洗牌 (強制新亂數，重置所有進度)
+    function shuffleGame() {
+        stopTimer();
+        const total = currentSize * currentSize;
+        currentGrid = generateShuffledArray(total);
+        nextNumber = 1;
+        errorCount = 0;
+        errorSpan.innerText = '0';
+        gameActive = true;
+        startTime = null;
+        timerDisplay.innerText = '0.00';
+        messageDiv.style.display = 'none';
+        renderGrid();
+    }
+
+    // 切換尺寸
+    function setSize(newSize) {
+        if (newSize === currentSize) return;
+        currentSize = newSize;
+        // 更新按鈕樣式
+        sizeBtns.forEach(btn => {
+            if (parseInt(btn.getAttribute('data-size')) === newSize) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+        // 重新產生該尺寸的亂數表
+        const total = newSize * newSize;
+        currentGrid = generateShuffledArray(total);
+        nextNumber = 1;
+        errorCount = 0;
+        errorSpan.innerText = '0';
+        gameActive = true;
+        startTime = null;
+        timerDisplay.innerText = '0.00';
+        messageDiv.style.display = 'none';
+        stopTimer();
+        renderGrid();
+        updateBestUI();
+    }
+
+    // LIFF 初始化
+    async function initLIFF() {
+        const LIFF_ID = '2010026891';   // 您提供的 ID
+        try {
+            await liff.init({ liffId: LIFF_ID });
+            if (liff.isLoggedIn()) {
+                const profile = await liff.getProfile();
+                document.getElementById('userName').innerText = profile.displayName || 'LINE User';
+                const avatarImg = document.getElementById('avatarImg');
+                if (avatarImg && profile.pictureUrl) avatarImg.src = profile.pictureUrl;
+            } else {
+                document.getElementById('userName').innerText = '請登入 LINE';
+                liff.login();
+            }
+        } catch (err) {
+            console.error(err);
+            document.getElementById('userName').innerText = '訪客模式';
+        }
+    }
+
+    // 事件綁定
+    function bindEvents() {
+        resetBtn.addEventListener('click', () => resetGame(false));
+        shuffleBtn.addEventListener('click', () => shuffleGame());
+        sizeBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const size = parseInt(btn.getAttribute('data-size'));
+                setSize(size);
+            });
+        });
+    }
+
+    // 啟動
+    window.addEventListener('load', async () => {
+        if (typeof liff !== 'undefined') await initLIFF();
+        else document.getElementById('userName').innerText = 'SDK 錯誤';
+        // 預設 5x5
+        currentSize = 5;
+        const total = currentSize * currentSize;
+        currentGrid = generateShuffledArray(total);
+        renderGrid();
+        updateBestUI();
+        bindEvents();
+    });
+</script>
+</body>
+</html>
