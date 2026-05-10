@@ -1,0 +1,556 @@
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>⚡ 舒爾特方格 · 全球排行榜</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(circle at 20% 30%, #0a0f1a, #03050b);
+            font-family: 'Share Tech Mono', 'Courier New', monospace;
+            padding: 16px;
+        }
+        .game-container {
+            max-width: 620px;
+            margin: 0 auto;
+            background: rgba(8, 12, 25, 0.75);
+            backdrop-filter: blur(4px);
+            border-radius: 32px;
+            padding: 20px 18px 30px;
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+        .profile-area {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: #010101cc;
+            padding: 8px 16px;
+            border-radius: 60px;
+            margin-bottom: 20px;
+            border: 1px solid #f0f;
+        }
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #0ff;
+        }
+        .user-name {
+            color: #0ff;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        .size-selector {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .size-btn {
+            background: #11151f;
+            border: 1px solid #0ff;
+            color: #0ff;
+            padding: 8px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .size-btn.active {
+            background: #0ff;
+            color: #000;
+            border-color: #f0f;
+            box-shadow: 0 0 15px #0ff;
+        }
+        .stats-panel {
+            display: flex;
+            justify-content: space-between;
+            background: #03050ad9;
+            padding: 10px 16px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #f0f;
+        }
+        .stat {
+            text-align: center;
+            flex: 1;
+        }
+        .stat-label {
+            font-size: 0.65rem;
+            color: #ff66cc;
+        }
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            font-family: 'Orbitron', monospace;
+            color: #0ff;
+            text-shadow: 0 0 6px #0ff;
+        }
+        #errorCount { color: #ff3366; }
+        
+        .grid {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .cell {
+            aspect-ratio: 1;
+            background: #0d1020;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.5rem;
+            font-family: 'Orbitron', monospace;
+            color: #0ff;
+            cursor: pointer;
+            border: 1px solid #33ccff;
+            box-shadow: 0 0 6px #0ff;
+            transition: 0.05s linear;
+        }
+        .cell:active { transform: scale(0.97); }
+        .cell.completed {
+            background: #0a1f2a;
+            border-color: #f0f;
+            color: #f6f;
+            text-decoration: line-through;
+        }
+        .cell.error-flash {
+            animation: glitchShake 0.2s ease-in-out 0s 2;
+            background-color: #d4104c;
+        }
+        @keyframes glitchShake {
+            0% { background: #ff2a6d; }
+            100% { background: #ff2a6d; }
+        }
+        .cell.flash-pink { background: #ff00aa !important; box-shadow: 0 0 30px #ff00aa !important; }
+        .cell.flash-blue { background: #00ccff !important; box-shadow: 0 0 30px #00ccff !important; }
+        .cell.flash-purple { background: #b000ff !important; box-shadow: 0 0 30px #b000ff !important; }
+        
+        .control-bar {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin: 16px 0;
+        }
+        .btn {
+            background: #10131f;
+            border: 1px solid #0ff;
+            padding: 10px 20px;
+            border-radius: 60px;
+            color: #0ff;
+            font-weight: bold;
+            cursor: pointer;
+            flex: 0.45;
+            text-align: center;
+        }
+        .btn-primary { background: #0ff; color: #000; border-color: #f0f; }
+        
+        .leaderboard-section {
+            margin-top: 24px;
+            background: #03050acc;
+            border-radius: 20px;
+            padding: 12px;
+            border: 1px solid #0ff;
+        }
+        .leaderboard-title {
+            color: #f0f;
+            text-align: center;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+        .rank-list {
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 0.8rem;
+        }
+        .rank-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 10px;
+            border-bottom: 1px solid #33ccff33;
+            color: #0ff;
+        }
+        .rank-item.highlight {
+            background: #0ff22a;
+            color: #000;
+            font-weight: bold;
+            border-radius: 8px;
+        }
+        .rank-num { width: 40px; }
+        .rank-name { flex: 2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .rank-time { width: 70px; text-align: right; }
+        .completion-message {
+            text-align: center;
+            background: #0a101fcc;
+            padding: 8px;
+            border-radius: 30px;
+            color: #0ff;
+            margin-top: 10px;
+        }
+        footer {
+            font-size: 0.6rem;
+            text-align: center;
+            margin-top: 16px;
+            color: #77aaff;
+        }
+        @media (max-width: 480px) {
+            .cell { font-size: 1.2rem; }
+            .stat-value { font-size: 1.3rem; }
+        }
+    </style>
+    <script src="https://static.line-scdn.net/liff/edge/versions/2.23.1/sdk.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div class="game-container">
+    <div class="profile-area">
+        <img id="avatarImg" class="avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23333'%3E%3Ccircle cx='12' cy='8' r='4' fill='%23666'/%3E%3Cpath d='M12 14c-4 0-6 2-6 4h12c0-2-2-4-6-4z' fill='%23666'/%3E%3C/svg%3E" alt="avatar">
+        <div class="user-info">
+            <div class="user-name" id="userName">載入中...</div>
+            <div class="user-status">🌍 全球排行榜</div>
+        </div>
+    </div>
+
+    <div class="size-selector">
+        <button class="size-btn" data-size="3">3x3</button>
+        <button class="size-btn active" data-size="5">5x5</button>
+        <button class="size-btn" data-size="6">6x6</button>
+    </div>
+
+    <div class="stats-panel">
+        <div class="stat"><div class="stat-label">⏱️ 時間</div><div class="stat-value" id="timerDisplay">0.00</div></div>
+        <div class="stat"><div class="stat-label">🏆 最佳</div><div class="stat-value" id="bestDisplay">--</div></div>
+        <div class="stat"><div class="stat-label">❌ 錯誤</div><div class="stat-value" id="errorCount">0</div></div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="control-bar">
+        <button class="btn" id="resetBtn">⟳ 新的一局</button>
+        <button class="btn btn-primary" id="shuffleBtn">🌀 重新洗牌</button>
+    </div>
+    <div id="messageArea" class="completion-message" style="display: none;"></div>
+
+    <div class="leaderboard-section">
+        <div class="leaderboard-title" id="leaderboardTitle">🏆 全球排行榜 (5x5) 🏆</div>
+        <div id="rankList" class="rank-list">載入中...</div>
+    </div>
+    <footer>開發|ULIY</footer>
+</div>
+
+<script>
+    // ========== Supabase 設定 ==========
+    const SUPABASE_URL = 'https://vwmvdrvxaehcnzznfnlj.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_vAVRA_69valBP0iF_eY2qQ_wKCvxmMi';
+    
+    let supabaseClient = null;
+    try {
+        supabaseClient = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('Supabase 初始化成功');
+    } catch(e) {
+        console.error('Supabase 初始化失敗:', e);
+    }
+
+    // ========== 音效 ==========
+    class SoundFX {
+        constructor() { this.audioCtx = null; this.initialized = false; }
+        init() { if (!this.initialized && window.AudioContext) { try { this.audioCtx = new (window.AudioContext || window.webkitAudioContext)(); this.initialized = true; } catch(e) {} } }
+        playCorrect() { if (this.audioCtx) { const osc = this.audioCtx.createOscillator(); const gain = this.audioCtx.createGain(); osc.connect(gain); gain.connect(this.audioCtx.destination); osc.frequency.value = 1046.5; gain.gain.setValueAtTime(0.15, this.audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.0001, this.audioCtx.currentTime + 0.3); osc.start(); osc.stop(this.audioCtx.currentTime + 0.25); } }
+        playError() { if (this.audioCtx) { const osc = this.audioCtx.createOscillator(); const gain = this.audioCtx.createGain(); osc.connect(gain); gain.connect(this.audioCtx.destination); osc.frequency.value = 174.6; gain.gain.setValueAtTime(0.2, this.audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.0001, this.audioCtx.currentTime + 0.4); osc.start(); osc.stop(this.audioCtx.currentTime + 0.35); } }
+        resume() { if (this.audioCtx && this.audioCtx.state === 'suspended') this.audioCtx.resume(); }
+    }
+    const sound = new SoundFX();
+
+    // ========== 遊戲狀態 ==========
+    let currentSize = 5;
+    let currentGrid = [];
+    let nextNumber = 1;
+    let gameActive = true;
+    let startTime = null;
+    let timerInterval = null;
+    let errorCount = 0;
+    let colorClickCount = 0;
+    let bestTimes = { 3: null, 5: null, 6: null };
+    let lineUserId = null;
+    let lineDisplayName = '訪客';
+    let lineAvatarUrl = null;
+
+    // DOM 元素
+    const gridContainer = document.getElementById('grid');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const bestDisplay = document.getElementById('bestDisplay');
+    const errorSpan = document.getElementById('errorCount');
+    const resetBtn = document.getElementById('resetBtn');
+    const shuffleBtn = document.getElementById('shuffleBtn');
+    const messageDiv = document.getElementById('messageArea');
+    const sizeBtns = document.querySelectorAll('.size-btn');
+    const leaderboardTitle = document.getElementById('leaderboardTitle');
+
+    function updateBestUI() {
+        const b = bestTimes[currentSize];
+        bestDisplay.innerText = (b && b < 999) ? b.toFixed(2) : '--';
+    }
+
+    function stopTimer() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+    }
+
+    function startTimer() {
+        if (startTime !== null) return;
+        startTime = Date.now();
+        timerInterval = setInterval(() => {
+            if (gameActive && startTime) {
+                const elapsed = (Date.now() - startTime) / 1000;
+                if (elapsed < 999) timerDisplay.innerText = elapsed.toFixed(2);
+            }
+        }, 100);
+    }
+
+    function generateShuffledArray(total) {
+        const arr = Array.from({ length: total }, (_, i) => i + 1);
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function applyColorFlash(el) {
+        const colors = ['flash-pink', 'flash-blue', 'flash-purple'];
+        const c = colors[colorClickCount++ % 3];
+        el.classList.add(c);
+        setTimeout(() => el.classList.remove(c), 180);
+    }
+
+    function renderGrid() {
+        if (!gridContainer) return;
+        gridContainer.style.gridTemplateColumns = `repeat(${currentSize}, 1fr)`;
+        gridContainer.innerHTML = '';
+        for (let i = 0; i < currentGrid.length; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            if (currentGrid[i] < nextNumber) cell.classList.add('completed');
+            cell.innerText = currentGrid[i];
+            cell.setAttribute('data-index', i);
+            cell.addEventListener('click', (e) => {
+                e.stopPropagation();
+                sound.resume();
+                handleCellClick(i, cell);
+            });
+            gridContainer.appendChild(cell);
+        }
+        console.log('網格已渲染，尺寸:', currentSize, '總數:', currentGrid.length);
+    }
+
+    async function saveToCloud(size, seconds) {
+        if (!supabaseClient || !lineUserId) return;
+        try {
+            const field = `best_time_${size}`;
+            await supabaseClient.from('leaderboard').upsert({
+                line_user_id: lineUserId,
+                display_name: lineDisplayName,
+                avatar_url: lineAvatarUrl,
+                [field]: seconds,
+                updated_at: new Date()
+            }, { onConflict: 'line_user_id' });
+            console.log('已上傳雲端:', size, seconds);
+        } catch(e) { console.error('上傳失敗:', e); }
+    }
+
+    async function loadGlobalRank(size) {
+        if (!supabaseClient) return;
+        try {
+            const { data, error } = await supabaseClient.from('leaderboard')
+                .select('display_name, best_time_' + size)
+                .not(`best_time_${size}`, 'is', null)
+                .order(`best_time_${size}`, { ascending: true })
+                .limit(20);
+            if (error) throw error;
+            const rankDiv = document.getElementById('rankList');
+            if (!data || data.length === 0) {
+                rankDiv.innerHTML = '<div style="color:#888">暫無紀錄</div>';
+                return;
+            }
+            rankDiv.innerHTML = data.map((row, idx) => {
+                const time = row[`best_time_${size}`];
+                const highlight = (row.display_name === lineDisplayName) ? 'highlight' : '';
+                return `<div class="rank-item ${highlight}"><span class="rank-num">${idx+1}</span><span class="rank-name">${escapeHtml(row.display_name || '玩家')}</span><span class="rank-time">${time.toFixed(2)}s</span></div>`;
+            }).join('');
+            leaderboardTitle.innerText = `🏆 全球排行榜 (${size}x${size}) 🏆`;
+        } catch(e) { console.error('讀取排行榜失敗:', e); }
+    }
+    
+    function escapeHtml(str) { if (!str) return '玩家'; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
+
+    async function handleFinishGame(finalTime) {
+        gameActive = false;
+        stopTimer();
+        timerDisplay.innerText = finalTime.toFixed(2);
+        let isNewRecord = false;
+        if (!bestTimes[currentSize] || finalTime < bestTimes[currentSize]) {
+            bestTimes[currentSize] = finalTime;
+            isNewRecord = true;
+            await saveToCloud(currentSize, finalTime);
+            await loadGlobalRank(currentSize);
+        }
+        messageDiv.style.display = 'block';
+        messageDiv.innerHTML = `✨ 完成！ ${finalTime.toFixed(2)} 秒 ${isNewRecord ? '🎉 新紀錄已上傳雲端 🎉' : ''}`;
+    }
+
+    function handleCellClick(idx, cell) {
+        if (!gameActive) return;
+        if (currentGrid[idx] === nextNumber) {
+            sound.playCorrect();
+            applyColorFlash(cell);
+            if (nextNumber === 1 && startTime === null) startTimer();
+            if (!cell.classList.contains('completed')) cell.classList.add('completed');
+            nextNumber++;
+            if (nextNumber > currentSize * currentSize) {
+                handleFinishGame((Date.now() - startTime) / 1000);
+            }
+        } else {
+            sound.playError();
+            errorCount++;
+            errorSpan.innerText = errorCount;
+            cell.classList.add('error-flash');
+            setTimeout(() => cell.classList.remove('error-flash'), 300);
+        }
+    }
+
+    function resetGame(keepNumbers = false) {
+        stopTimer();
+        messageDiv.style.display = 'none';
+        if (!keepNumbers) {
+            currentGrid = generateShuffledArray(currentSize * currentSize);
+        }
+        nextNumber = 1;
+        errorCount = 0;
+        errorSpan.innerText = '0';
+        gameActive = true;
+        startTime = null;
+        timerDisplay.innerText = '0.00';
+        renderGrid();
+        colorClickCount = 0;
+    }
+
+    function shuffleGame() {
+        stopTimer();
+        currentGrid = generateShuffledArray(currentSize * currentSize);
+        nextNumber = 1;
+        errorCount = 0;
+        errorSpan.innerText = '0';
+        gameActive = true;
+        startTime = null;
+        timerDisplay.innerText = '0.00';
+        messageDiv.style.display = 'none';
+        renderGrid();
+        colorClickCount = 0;
+    }
+
+    function setSize(sz) {
+        if (sz === currentSize) return;
+        currentSize = sz;
+        sizeBtns.forEach(btn => {
+            if (parseInt(btn.dataset.size) === sz) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+        currentGrid = generateShuffledArray(sz * sz);
+        nextNumber = 1;
+        errorCount = 0;
+        errorSpan.innerText = '0';
+        gameActive = true;
+        startTime = null;
+        timerDisplay.innerText = '0.00';
+        stopTimer();
+        renderGrid();
+        loadGlobalRank(currentSize);
+    }
+
+    // 初始化遊戲（不依賴 LIFF）
+    function initGameOnly() {
+        currentSize = 5;
+        currentGrid = generateShuffledArray(25);
+        renderGrid();
+        updateBestUI();
+        console.log('遊戲已初始化（無 LIFF）');
+    }
+
+    // LIFF 初始化
+    async function initLIFF() {
+        try {
+            if (typeof liff === 'undefined') {
+                console.warn('LIFF SDK 未載入');
+                document.getElementById('userName').innerText = '訪客模式';
+                return;
+            }
+            await liff.init({ liffId: '2010026891' });
+            console.log('LIFF 初始化成功');
+            if (liff.isLoggedIn()) {
+                const profile = await liff.getProfile();
+                lineUserId = profile.userId;
+                lineDisplayName = profile.displayName;
+                lineAvatarUrl = profile.pictureUrl;
+                document.getElementById('userName').innerText = lineDisplayName;
+                const avatarImg = document.getElementById('avatarImg');
+                if (avatarImg && lineAvatarUrl) avatarImg.src = lineAvatarUrl;
+                
+                // 讀取個人紀錄
+                if (supabaseClient) {
+                    const { data } = await supabaseClient.from('leaderboard')
+                        .select('best_time_3, best_time_5, best_time_6')
+                        .eq('line_user_id', lineUserId)
+                        .single();
+                    if (data) {
+                        bestTimes = { 3: data.best_time_3, 5: data.best_time_5, 6: data.best_time_6 };
+                        updateBestUI();
+                    }
+                    await loadGlobalRank(5);
+                }
+            } else {
+                document.getElementById('userName').innerText = '請登入 LINE';
+                liff.login();
+            }
+        } catch (err) {
+            console.error('LIFF 錯誤:', err);
+            document.getElementById('userName').innerText = '訪客模式';
+        }
+    }
+
+    // 綁定事件
+    function bindEvents() {
+        resetBtn.onclick = () => resetGame(false);
+        shuffleBtn.onclick = () => shuffleGame();
+        sizeBtns.forEach(btn => {
+            btn.onclick = () => setSize(parseInt(btn.dataset.size));
+        });
+    }
+
+    // 啟動
+    window.addEventListener('load', async () => {
+        console.log('頁面載入完成');
+        bindEvents();
+        initGameOnly();
+        sound.init();
+        
+        // 嘗試初始化 LIFF（不阻塞遊戲）
+        if (typeof liff !== 'undefined') {
+            await initLIFF();
+        } else {
+            document.getElementById('userName').innerText = '訪客模式';
+        }
+    });
+</script>
+</body>
+</html>
