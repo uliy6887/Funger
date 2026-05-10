@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>舒爾特方格 - 螢光音效版</title>
+    <title>⚡ 舒爾特方格 · 全球排行榜</title>
     <style>
         * {
             box-sizing: border-box;
@@ -11,86 +11,73 @@
             -webkit-tap-highlight-color: transparent;
         }
         body {
-            background-color: #0a0f1a;
-            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
             margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(circle at 20% 30%, #0a0f1a, #03050b);
+            font-family: 'Share Tech Mono', 'Courier New', monospace;
             padding: 16px;
         }
         .game-container {
-            max-width: 600px;
-            width: 100%;
-            background: #0f1219;
-            border-radius: 48px;
-            padding: 18px 16px 28px;
-            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.6);
-            border: 1px solid #2a2f3a;
+            max-width: 620px;
+            margin: 0 auto;
+            background: rgba(8, 12, 25, 0.75);
+            backdrop-filter: blur(4px);
+            border-radius: 32px;
+            padding: 20px 18px 30px;
+            border: 1px solid #0ff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
         }
         .profile-area {
             display: flex;
             align-items: center;
             gap: 14px;
-            background: #05080f;
-            padding: 10px 16px;
-            border-radius: 100px;
+            background: #010101cc;
+            padding: 8px 16px;
+            border-radius: 60px;
             margin-bottom: 20px;
-            border: 1px solid #2c3142;
+            border: 1px solid #f0f;
         }
         .avatar {
             width: 48px;
             height: 48px;
             border-radius: 50%;
             object-fit: cover;
-            border: 2px solid #3eff9e;
-            box-shadow: 0 0 6px #3eff9e;
+            border: 2px solid #0ff;
         }
         .user-name {
-            color: #eef5ff;
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-        .user-status {
-            color: #8f9bb5;
-            font-size: 0.7rem;
+            color: #0ff;
+            font-weight: bold;
+            font-size: 1rem;
         }
         .size-selector {
             display: flex;
-            gap: 12px;
+            gap: 14px;
             justify-content: center;
             margin-bottom: 20px;
         }
         .size-btn {
-            background: #121624;
-            border: 1px solid #2e3a48;
-            color: #bfffc9;
-            font-weight: bold;
-            padding: 8px 18px;
+            background: #11151f;
+            border: 1px solid #0ff;
+            color: #0ff;
+            padding: 8px 20px;
             border-radius: 40px;
-            font-size: 1rem;
             cursor: pointer;
-            box-shadow: 0 3px 0 #03060c;
-            transition: 0.05s linear;
+            font-weight: bold;
         }
         .size-btn.active {
-            background: #1b4b2f;
-            border-color: #3eff9e;
-            color: white;
-        }
-        .size-btn:active {
-            transform: translateY(2px);
-            box-shadow: 0 1px 0 #03060c;
+            background: #0ff;
+            color: #000;
+            border-color: #f0f;
+            box-shadow: 0 0 15px #0ff;
         }
         .stats-panel {
             display: flex;
             justify-content: space-between;
-            background: #03060c;
+            background: #03050ad9;
             padding: 10px 16px;
-            border-radius: 48px;
-            margin-bottom: 24px;
-            border: 1px solid #2a2f3e;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #f0f;
         }
         .stat {
             text-align: center;
@@ -98,122 +85,123 @@
         }
         .stat-label {
             font-size: 0.65rem;
-            color: #7e8aa5;
+            color: #ff66cc;
         }
         .stat-value {
             font-size: 1.6rem;
             font-weight: 800;
-            color: #3eff9e;
-            text-shadow: 0 0 4px #00cc77;
-            line-height: 1.2;
+            font-family: 'Orbitron', monospace;
+            color: #0ff;
+            text-shadow: 0 0 6px #0ff;
         }
-        #errorCount {
-            color: #ff7760;
-        }
+        #errorCount { color: #ff3366; }
+        
         .grid {
             display: grid;
-            gap: 10px;
-            margin-bottom: 24px;
+            gap: 12px;
+            margin-bottom: 20px;
         }
         .cell {
-            aspect-ratio: 1 / 1;
-            background: #10131f;
+            aspect-ratio: 1;
+            background: #0d1020;
             border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
+            font-weight: 800;
             font-size: 1.5rem;
-            font-family: monospace;
-            color: #bfffc9;
+            font-family: 'Orbitron', monospace;
+            color: #0ff;
             cursor: pointer;
-            border: 1px solid #2a3250;
-            box-shadow: 0 6px 0 #03060c;
+            border: 1px solid #33ccff;
+            box-shadow: 0 0 6px #0ff;
             transition: 0.05s linear;
         }
-        .cell:active {
-            transform: translateY(2px);
-            box-shadow: 0 3px 0 #03060c;
-        }
+        .cell:active { transform: scale(0.97); }
         .cell.completed {
-            background: #0a2e1f;
-            border-color: #3eff9e;
-            color: #a0f0c0;
+            background: #0a1f2a;
+            border-color: #f0f;
+            color: #f6f;
             text-decoration: line-through;
-            opacity: 0.7;
-            cursor: default;
-            transform: none;
-            box-shadow: 0 2px 0 #03060c;
         }
-        /* 錯誤閃爍 */
         .cell.error-flash {
-            animation: shakeFlash 0.2s ease-in-out 0s 2;
-            background-color: #c44;
-            border-color: #ff8888;
+            animation: glitchShake 0.2s ease-in-out 0s 2;
+            background-color: #d4104c;
         }
-        @keyframes shakeFlash {
-            0% { transform: translateX(0px); background: #d55; }
-            50% { transform: translateX(4px); background: #f66; }
-            100% { transform: translateX(0px); background: #c44; }
+        @keyframes glitchShake {
+            0% { background: #ff2a6d; }
+            100% { background: #ff2a6d; }
         }
-        /* 螢光點擊特效 */
-        .cell.flash-pink {
-            background: #ff69b4 !important;
-            box-shadow: 0 0 15px #ff69b4 !important;
-            border-color: #fff0f5 !important;
-        }
-        .cell.flash-blue {
-            background: #00bfff !important;
-            box-shadow: 0 0 15px #00bfff !important;
-            border-color: #e0f7ff !important;
-        }
-        .cell.flash-purple {
-            background: #bf5fff !important;
-            box-shadow: 0 0 15px #bf5fff !important;
-            border-color: #f0e6ff !important;
-        }
+        .cell.flash-pink { background: #ff00aa !important; box-shadow: 0 0 30px #ff00aa !important; }
+        .cell.flash-blue { background: #00ccff !important; box-shadow: 0 0 30px #00ccff !important; }
+        .cell.flash-purple { background: #b000ff !important; box-shadow: 0 0 30px #b000ff !important; }
+        
         .control-bar {
             display: flex;
             gap: 16px;
             justify-content: center;
-            margin-top: 8px;
+            margin: 16px 0;
         }
         .btn {
-            background: #121624;
-            border: none;
+            background: #10131f;
+            border: 1px solid #0ff;
             padding: 10px 20px;
             border-radius: 60px;
+            color: #0ff;
             font-weight: bold;
-            font-size: 0.9rem;
-            color: #d0f0e0;
-            box-shadow: 0 5px 0 #05080c;
             cursor: pointer;
-            border: 1px solid #2e3a48;
-            flex: 0.4;
+            flex: 0.45;
+            text-align: center;
         }
-        .btn:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px 0 #05080c;
+        .btn-primary { background: #0ff; color: #000; border-color: #f0f; }
+        
+        .leaderboard-section {
+            margin-top: 24px;
+            background: #03050acc;
+            border-radius: 20px;
+            padding: 12px;
+            border: 1px solid #0ff;
         }
-        .btn-primary {
-            background: #1b4b2f;
-            border-color: #3eff9e;
+        .leaderboard-title {
+            color: #f0f;
+            text-align: center;
+            font-size: 1rem;
+            margin-bottom: 10px;
         }
+        .rank-list {
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 0.8rem;
+        }
+        .rank-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 10px;
+            border-bottom: 1px solid #33ccff33;
+            color: #0ff;
+        }
+        .rank-item.highlight {
+            background: #0ff22a;
+            color: #000;
+            font-weight: bold;
+            border-radius: 8px;
+        }
+        .rank-num { width: 40px; }
+        .rank-name { flex: 2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .rank-time { width: 70px; text-align: right; }
         .completion-message {
             text-align: center;
-            margin-top: 16px;
-            background: #1e2a1f;
+            background: #0a101fcc;
             padding: 8px;
-            border-radius: 60px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            color: #c6ffc1;
+            border-radius: 30px;
+            color: #0ff;
+            margin-top: 10px;
         }
         footer {
             font-size: 0.6rem;
             text-align: center;
-            margin-top: 20px;
-            color: #4a5270;
+            margin-top: 16px;
+            color: #77aaff;
         }
         @media (max-width: 480px) {
             .cell { font-size: 1.2rem; }
@@ -221,14 +209,15 @@
         }
     </style>
     <script src="https://static.line-scdn.net/liff/edge/versions/2.23.1/sdk.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <div class="game-container">
     <div class="profile-area">
         <img id="avatarImg" class="avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23333'%3E%3Ccircle cx='12' cy='8' r='4' fill='%23666'/%3E%3Cpath d='M12 14c-4 0-6 2-6 4h12c0-2-2-4-6-4z' fill='%23666'/%3E%3C/svg%3E" alt="avatar">
         <div class="user-info">
-            <div class="user-name" id="userName">Loading LINE...</div>
-            <div class="user-status">🎵 </div>
+            <div class="user-name" id="userName">載入中...</div>
+            <div class="user-status">🌍 全球排行榜</div>
         </div>
     </div>
 
@@ -247,69 +236,42 @@
     <div class="grid" id="grid"></div>
 
     <div class="control-bar">
-        <button class="btn" id="resetBtn">🔄 新的一局</button>
-        <button class="btn btn-primary" id="shuffleBtn">✨ 重新洗牌</button>
+        <button class="btn" id="resetBtn">⟳ 新的一局</button>
+        <button class="btn btn-primary" id="shuffleBtn">🌀 重新洗牌</button>
     </div>
     <div id="messageArea" class="completion-message" style="display: none;"></div>
-    <footer>依序點擊 1 → N | 正確👉叮 錯誤👉嘟 </footer>
+
+    <div class="leaderboard-section">
+        <div class="leaderboard-title" id="leaderboardTitle">🏆 全球排行榜 (5x5) 🏆</div>
+        <div id="rankList" class="rank-list">載入中...</div>
+    </div>
+    <footer>點擊正確👉霓虹特效 | 紀錄永久儲存雲端</footer>
 </div>
 
 <script>
-    // ========== 音效管理 (Web Audio) ==========
-    class SoundFX {
-        constructor() {
-            this.audioCtx = null;
-            this.initialized = false;
-        }
-        // 必須在使用者點擊後初始化
-        init() {
-            if (this.initialized) return;
-            try {
-                this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                this.initialized = true;
-            } catch(e) { console.warn("Web Audio not supported"); }
-        }
-        // 播放正確音效 (高頻短促)
-        playCorrect() {
-            if (!this.initialized) this.init();
-            if (!this.audioCtx) return;
-            const now = this.audioCtx.currentTime;
-            const osc = this.audioCtx.createOscillator();
-            const gain = this.audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(this.audioCtx.destination);
-            osc.frequency.value = 880; // A5 高音
-            gain.gain.setValueAtTime(0.2, now);
-            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
-            osc.start(now);
-            osc.stop(now + 0.3);
-        }
-        // 播放錯誤音效 (低頻短促)
-        playError() {
-            if (!this.initialized) this.init();
-            if (!this.audioCtx) return;
-            const now = this.audioCtx.currentTime;
-            const osc = this.audioCtx.createOscillator();
-            const gain = this.audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(this.audioCtx.destination);
-            osc.frequency.value = 220; // A3 低音
-            gain.gain.setValueAtTime(0.25, now);
-            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
-            osc.start(now);
-            osc.stop(now + 0.35);
-        }
-        // 喚醒 AudioContext (某些瀏覽器需要 user gesture 後 resume)
-        resume() {
-            if (this.audioCtx && this.audioCtx.state === 'suspended') {
-                this.audioCtx.resume();
-            }
-        }
+    // ========== Supabase 設定 ==========
+    const SUPABASE_URL = 'https://vwmvdrvxaehcnzznfnlj.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_vAVRA_69valBP0iF_eY2qQ_wKCvxmMi';
+    
+    let supabaseClient = null;
+    try {
+        supabaseClient = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('Supabase 初始化成功');
+    } catch(e) {
+        console.error('Supabase 初始化失敗:', e);
     }
 
+    // ========== 音效 ==========
+    class SoundFX {
+        constructor() { this.audioCtx = null; this.initialized = false; }
+        init() { if (!this.initialized && window.AudioContext) { try { this.audioCtx = new (window.AudioContext || window.webkitAudioContext)(); this.initialized = true; } catch(e) {} } }
+        playCorrect() { if (this.audioCtx) { const osc = this.audioCtx.createOscillator(); const gain = this.audioCtx.createGain(); osc.connect(gain); gain.connect(this.audioCtx.destination); osc.frequency.value = 1046.5; gain.gain.setValueAtTime(0.15, this.audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.0001, this.audioCtx.currentTime + 0.3); osc.start(); osc.stop(this.audioCtx.currentTime + 0.25); } }
+        playError() { if (this.audioCtx) { const osc = this.audioCtx.createOscillator(); const gain = this.audioCtx.createGain(); osc.connect(gain); gain.connect(this.audioCtx.destination); osc.frequency.value = 174.6; gain.gain.setValueAtTime(0.2, this.audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.0001, this.audioCtx.currentTime + 0.4); osc.start(); osc.stop(this.audioCtx.currentTime + 0.35); } }
+        resume() { if (this.audioCtx && this.audioCtx.state === 'suspended') this.audioCtx.resume(); }
+    }
     const sound = new SoundFX();
 
-    // ========== 遊戲邏輯 ==========
+    // ========== 遊戲狀態 ==========
     let currentSize = 5;
     let currentGrid = [];
     let nextNumber = 1;
@@ -317,22 +279,13 @@
     let startTime = null;
     let timerInterval = null;
     let errorCount = 0;
-    let colorClickCount = 0;   // 交替顏色
+    let colorClickCount = 0;
+    let bestTimes = { 3: null, 5: null, 6: null };
+    let lineUserId = null;
+    let lineDisplayName = '訪客';
+    let lineAvatarUrl = null;
 
-    // 最佳紀錄
-    let bestTimes = {
-        3: localStorage.getItem('bestTime_3') ? parseFloat(localStorage.getItem('bestTime_3')) : null,
-        5: localStorage.getItem('bestTime_5') ? parseFloat(localStorage.getItem('bestTime_5')) : null,
-        6: localStorage.getItem('bestTime_6') ? parseFloat(localStorage.getItem('bestTime_6')) : null
-    };
-    for (let sz in bestTimes) {
-        if (bestTimes[sz] && (bestTimes[sz] > 999 || isNaN(bestTimes[sz]))) {
-            localStorage.removeItem(`bestTime_${sz}`);
-            bestTimes[sz] = null;
-        }
-    }
-
-    // DOM
+    // DOM 元素
     const gridContainer = document.getElementById('grid');
     const timerDisplay = document.getElementById('timerDisplay');
     const bestDisplay = document.getElementById('bestDisplay');
@@ -341,22 +294,11 @@
     const shuffleBtn = document.getElementById('shuffleBtn');
     const messageDiv = document.getElementById('messageArea');
     const sizeBtns = document.querySelectorAll('.size-btn');
+    const leaderboardTitle = document.getElementById('leaderboardTitle');
 
     function updateBestUI() {
-        const best = bestTimes[currentSize];
-        if (best !== null && best < 999) bestDisplay.innerText = best.toFixed(2) + ' sec';
-        else bestDisplay.innerText = '--';
-    }
-
-    function saveBestTime(seconds) {
-        if (seconds < 0 || seconds > 999) return false;
-        if (bestTimes[currentSize] === null || seconds < bestTimes[currentSize]) {
-            bestTimes[currentSize] = seconds;
-            localStorage.setItem(`bestTime_${currentSize}`, seconds);
-            updateBestUI();
-            return true;
-        }
-        return false;
+        const b = bestTimes[currentSize];
+        bestDisplay.innerText = (b && b < 999) ? b.toFixed(2) : '--';
     }
 
     function stopTimer() {
@@ -372,8 +314,7 @@
         timerInterval = setInterval(() => {
             if (gameActive && startTime) {
                 const elapsed = (Date.now() - startTime) / 1000;
-                if (elapsed > 999) resetGame(false);
-                else timerDisplay.innerText = elapsed.toFixed(2);
+                if (elapsed < 999) timerDisplay.innerText = elapsed.toFixed(2);
             }
         }, 100);
     }
@@ -387,69 +328,105 @@
         return arr;
     }
 
-    function applyColorFlash(element) {
+    function applyColorFlash(el) {
         const colors = ['flash-pink', 'flash-blue', 'flash-purple'];
-        const colorClass = colors[colorClickCount % colors.length];
-        colorClickCount++;
-        element.classList.add(colorClass);
-        setTimeout(() => element.classList.remove(colorClass), 180);
+        const c = colors[colorClickCount++ % 3];
+        el.classList.add(c);
+        setTimeout(() => el.classList.remove(c), 180);
     }
 
     function renderGrid() {
+        if (!gridContainer) return;
         gridContainer.style.gridTemplateColumns = `repeat(${currentSize}, 1fr)`;
         gridContainer.innerHTML = '';
         for (let i = 0; i < currentGrid.length; i++) {
-            const num = currentGrid[i];
             const cell = document.createElement('div');
             cell.className = 'cell';
-            if (num < nextNumber) cell.classList.add('completed');
+            if (currentGrid[i] < nextNumber) cell.classList.add('completed');
+            cell.innerText = currentGrid[i];
             cell.setAttribute('data-index', i);
-            cell.innerText = num;
             cell.addEventListener('click', (e) => {
                 e.stopPropagation();
-                // 每次點擊都喚醒音效上下文 (確保手機能播放)
                 sound.resume();
                 handleCellClick(i, cell);
             });
             gridContainer.appendChild(cell);
         }
+        console.log('網格已渲染，尺寸:', currentSize, '總數:', currentGrid.length);
     }
 
-    function handleCellClick(index, cellElement) {
+    async function saveToCloud(size, seconds) {
+        if (!supabaseClient || !lineUserId) return;
+        try {
+            const field = `best_time_${size}`;
+            await supabaseClient.from('leaderboard').upsert({
+                line_user_id: lineUserId,
+                display_name: lineDisplayName,
+                avatar_url: lineAvatarUrl,
+                [field]: seconds,
+                updated_at: new Date()
+            }, { onConflict: 'line_user_id' });
+            console.log('已上傳雲端:', size, seconds);
+        } catch(e) { console.error('上傳失敗:', e); }
+    }
+
+    async function loadGlobalRank(size) {
+        if (!supabaseClient) return;
+        try {
+            const { data, error } = await supabaseClient.from('leaderboard')
+                .select('display_name, best_time_' + size)
+                .not(`best_time_${size}`, 'is', null)
+                .order(`best_time_${size}`, { ascending: true })
+                .limit(20);
+            if (error) throw error;
+            const rankDiv = document.getElementById('rankList');
+            if (!data || data.length === 0) {
+                rankDiv.innerHTML = '<div style="color:#888">暫無紀錄</div>';
+                return;
+            }
+            rankDiv.innerHTML = data.map((row, idx) => {
+                const time = row[`best_time_${size}`];
+                const highlight = (row.display_name === lineDisplayName) ? 'highlight' : '';
+                return `<div class="rank-item ${highlight}"><span class="rank-num">${idx+1}</span><span class="rank-name">${escapeHtml(row.display_name || '玩家')}</span><span class="rank-time">${time.toFixed(2)}s</span></div>`;
+            }).join('');
+            leaderboardTitle.innerText = `🏆 全球排行榜 (${size}x${size}) 🏆`;
+        } catch(e) { console.error('讀取排行榜失敗:', e); }
+    }
+    
+    function escapeHtml(str) { if (!str) return '玩家'; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
+
+    async function handleFinishGame(finalTime) {
+        gameActive = false;
+        stopTimer();
+        timerDisplay.innerText = finalTime.toFixed(2);
+        let isNewRecord = false;
+        if (!bestTimes[currentSize] || finalTime < bestTimes[currentSize]) {
+            bestTimes[currentSize] = finalTime;
+            isNewRecord = true;
+            await saveToCloud(currentSize, finalTime);
+            await loadGlobalRank(currentSize);
+        }
+        messageDiv.style.display = 'block';
+        messageDiv.innerHTML = `✨ 完成！ ${finalTime.toFixed(2)} 秒 ${isNewRecord ? '🎉 新紀錄已上傳雲端 🎉' : ''}`;
+    }
+
+    function handleCellClick(idx, cell) {
         if (!gameActive) return;
-        const clickedNum = currentGrid[index];
-        if (clickedNum === nextNumber) {
-            // 正確
-            sound.playCorrect();          // 🔊 正確音效
-            applyColorFlash(cellElement);
-            if (nextNumber === 1 && startTime === null) {
-                startTimer();
-            }
-            if (!cellElement.classList.contains('completed')) {
-                cellElement.classList.add('completed');
-            }
+        if (currentGrid[idx] === nextNumber) {
+            sound.playCorrect();
+            applyColorFlash(cell);
+            if (nextNumber === 1 && startTime === null) startTimer();
+            if (!cell.classList.contains('completed')) cell.classList.add('completed');
             nextNumber++;
-            const total = currentSize * currentSize;
-            if (nextNumber > total) {
-                gameActive = false;
-                stopTimer();
-                if (startTime) {
-                    const finalTime = (Date.now() - startTime) / 1000;
-                    if (finalTime > 0 && finalTime < 999) {
-                        timerDisplay.innerText = finalTime.toFixed(2);
-                        const isRecord = saveBestTime(finalTime);
-                        messageDiv.style.display = 'block';
-                        messageDiv.innerHTML = `✨ 完成！ 用時 ${finalTime.toFixed(2)} 秒 ${isRecord ? '🎉 新紀錄！ 🎉' : ''}`;
-                    }
-                }
+            if (nextNumber > currentSize * currentSize) {
+                handleFinishGame((Date.now() - startTime) / 1000);
             }
         } else {
-            // 錯誤
-            sound.playError();            // 🔊 錯誤音效
+            sound.playError();
             errorCount++;
             errorSpan.innerText = errorCount;
-            cellElement.classList.add('error-flash');
-            setTimeout(() => cellElement.classList.remove('error-flash'), 300);
+            cell.classList.add('error-flash');
+            setTimeout(() => cell.classList.remove('error-flash'), 300);
         }
     }
 
@@ -457,8 +434,7 @@
         stopTimer();
         messageDiv.style.display = 'none';
         if (!keepNumbers) {
-            const total = currentSize * currentSize;
-            currentGrid = generateShuffledArray(total);
+            currentGrid = generateShuffledArray(currentSize * currentSize);
         }
         nextNumber = 1;
         errorCount = 0;
@@ -467,14 +443,12 @@
         startTime = null;
         timerDisplay.innerText = '0.00';
         renderGrid();
-        // 重置顏色計數器 (不重置也可，隨個人偏好)
         colorClickCount = 0;
     }
 
     function shuffleGame() {
         stopTimer();
-        const total = currentSize * currentSize;
-        currentGrid = generateShuffledArray(total);
+        currentGrid = generateShuffledArray(currentSize * currentSize);
         nextNumber = 1;
         errorCount = 0;
         errorSpan.innerText = '0';
@@ -486,69 +460,97 @@
         colorClickCount = 0;
     }
 
-    function setSize(newSize) {
-        if (newSize === currentSize) return;
-        currentSize = newSize;
+    function setSize(sz) {
+        if (sz === currentSize) return;
+        currentSize = sz;
         sizeBtns.forEach(btn => {
-            if (parseInt(btn.dataset.size) === newSize) btn.classList.add('active');
+            if (parseInt(btn.dataset.size) === sz) btn.classList.add('active');
             else btn.classList.remove('active');
         });
-        const total = newSize * newSize;
-        currentGrid = generateShuffledArray(total);
+        currentGrid = generateShuffledArray(sz * sz);
         nextNumber = 1;
         errorCount = 0;
         errorSpan.innerText = '0';
         gameActive = true;
         startTime = null;
         timerDisplay.innerText = '0.00';
-        messageDiv.style.display = 'none';
         stopTimer();
         renderGrid();
+        loadGlobalRank(currentSize);
+    }
+
+    // 初始化遊戲（不依賴 LIFF）
+    function initGameOnly() {
+        currentSize = 5;
+        currentGrid = generateShuffledArray(25);
+        renderGrid();
         updateBestUI();
-        colorClickCount = 0;
+        console.log('遊戲已初始化（無 LIFF）');
     }
 
     // LIFF 初始化
     async function initLIFF() {
-        const LIFF_ID = '2010026891';   // 您提供的 ID
         try {
-            await liff.init({ liffId: LIFF_ID });
+            if (typeof liff === 'undefined') {
+                console.warn('LIFF SDK 未載入');
+                document.getElementById('userName').innerText = '訪客模式';
+                return;
+            }
+            await liff.init({ liffId: '2010026891' });
+            console.log('LIFF 初始化成功');
             if (liff.isLoggedIn()) {
                 const profile = await liff.getProfile();
-                document.getElementById('userName').innerText = profile.displayName || 'LINE User';
+                lineUserId = profile.userId;
+                lineDisplayName = profile.displayName;
+                lineAvatarUrl = profile.pictureUrl;
+                document.getElementById('userName').innerText = lineDisplayName;
                 const avatarImg = document.getElementById('avatarImg');
-                if (avatarImg && profile.pictureUrl) avatarImg.src = profile.pictureUrl;
+                if (avatarImg && lineAvatarUrl) avatarImg.src = lineAvatarUrl;
+                
+                // 讀取個人紀錄
+                if (supabaseClient) {
+                    const { data } = await supabaseClient.from('leaderboard')
+                        .select('best_time_3, best_time_5, best_time_6')
+                        .eq('line_user_id', lineUserId)
+                        .single();
+                    if (data) {
+                        bestTimes = { 3: data.best_time_3, 5: data.best_time_5, 6: data.best_time_6 };
+                        updateBestUI();
+                    }
+                    await loadGlobalRank(5);
+                }
             } else {
                 document.getElementById('userName').innerText = '請登入 LINE';
                 liff.login();
             }
         } catch (err) {
-            console.error(err);
+            console.error('LIFF 錯誤:', err);
             document.getElementById('userName').innerText = '訪客模式';
         }
     }
 
-    // 綁定按鈕事件
+    // 綁定事件
     function bindEvents() {
-        resetBtn.addEventListener('click', () => resetGame(false));
-        shuffleBtn.addEventListener('click', () => shuffleGame());
+        resetBtn.onclick = () => resetGame(false);
+        shuffleBtn.onclick = () => shuffleGame();
         sizeBtns.forEach(btn => {
-            btn.addEventListener('click', () => setSize(parseInt(btn.dataset.size)));
+            btn.onclick = () => setSize(parseInt(btn.dataset.size));
         });
     }
 
-    // 啟動頁面
+    // 啟動
     window.addEventListener('load', async () => {
-        if (typeof liff !== 'undefined') await initLIFF();
-        else document.getElementById('userName').innerText = 'SDK 錯誤';
-        // 初始 5x5
-        currentSize = 5;
-        currentGrid = generateShuffledArray(25);
-        renderGrid();
-        updateBestUI();
+        console.log('頁面載入完成');
         bindEvents();
-        // 預先初始化音效 (但不播放，等到使用者點擊)
+        initGameOnly();
         sound.init();
+        
+        // 嘗試初始化 LIFF（不阻塞遊戲）
+        if (typeof liff !== 'undefined') {
+            await initLIFF();
+        } else {
+            document.getElementById('userName').innerText = '訪客模式';
+        }
     });
 </script>
 </body>
