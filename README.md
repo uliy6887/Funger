@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
@@ -244,7 +245,7 @@
         <div class="leaderboard-title" id="leaderboardTitle">🏆 全球排行榜 (5x5) 🏆</div>
         <div id="rankList" class="rank-list">載入中...</div>
     </div>
-    <footer>開發|ULIY</footer>
+    <footer>開發｜UNABABY</footer>
 </div>
 
 <script>
@@ -406,7 +407,7 @@
             await loadGlobalRank(currentSize);
         }
         messageDiv.style.display = 'block';
-        messageDiv.innerHTML = `✨ 完成！ ${finalTime.toFixed(2)} 秒 ${isNewRecord ? '🎉 新紀錄已上傳雲端 🎉' : ''}`;
+        messageDiv.innerHTML = `✨ 完成！ ${finalTime.toFixed(2)} 秒 ${isNewRecord ? '🎉 新紀錄已上傳' : ''}`;
     }
 
     function handleCellClick(idx, cell) {
@@ -484,7 +485,7 @@
         currentGrid = generateShuffledArray(25);
         renderGrid();
         updateBestUI();
-        console.log('遊戲已初始化（無 LIFF）');
+        console.log('遊戲已初始化');
     }
 
     // LIFF 初始化
@@ -495,7 +496,8 @@
                 document.getElementById('userName').innerText = '訪客模式';
                 return;
             }
-            await liff.init({ liffId: '2010026891' });
+            // 使用新的 LIFF ID
+            await liff.init({ liffId: '2010026891-2ZVWS0Ib' });
             console.log('LIFF 初始化成功');
             if (liff.isLoggedIn()) {
                 const profile = await liff.getProfile();
@@ -506,7 +508,6 @@
                 const avatarImg = document.getElementById('avatarImg');
                 if (avatarImg && lineAvatarUrl) avatarImg.src = lineAvatarUrl;
                 
-                // 讀取個人紀錄
                 if (supabaseClient) {
                     const { data } = await supabaseClient.from('leaderboard')
                         .select('best_time_3, best_time_5, best_time_6')
@@ -528,7 +529,6 @@
         }
     }
 
-    // 綁定事件
     function bindEvents() {
         resetBtn.onclick = () => resetGame(false);
         shuffleBtn.onclick = () => shuffleGame();
@@ -537,14 +537,12 @@
         });
     }
 
-    // 啟動
     window.addEventListener('load', async () => {
         console.log('頁面載入完成');
         bindEvents();
         initGameOnly();
         sound.init();
         
-        // 嘗試初始化 LIFF（不阻塞遊戲）
         if (typeof liff !== 'undefined') {
             await initLIFF();
         } else {
