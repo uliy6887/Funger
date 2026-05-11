@@ -1,548 +1,250 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>⚡ 舒爾特方格 · 全球排行榜</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-        body {
-            margin: 0;
-            min-height: 100vh;
-            background: radial-gradient(circle at 20% 30%, #0a0f1a, #03050b);
-            font-family: 'Segoe UI', system-ui, monospace;
-            padding: 16px;
-        }
-        .game-container {
-            max-width: 620px;
-            margin: 0 auto;
-            background: rgba(8, 12, 25, 0.85);
-            backdrop-filter: blur(4px);
-            border-radius: 32px;
-            padding: 20px 18px 30px;
-            border: 1px solid #0ff;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
-        }
-        .profile-area {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            background: #010101cc;
-            padding: 8px 16px;
-            border-radius: 60px;
-            margin-bottom: 20px;
-            border: 1px solid #f0f;
-        }
-        .avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #0ff;
-        }
-        .user-name {
-            color: #0ff;
-            font-weight: bold;
-            font-size: 1rem;
-        }
-        .user-status {
-            font-size: 0.7rem;
-            color: #f0f;
-        }
-        .size-selector {
-            display: flex;
-            gap: 14px;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        .size-btn {
-            background: #11151f;
-            border: 1px solid #0ff;
-            color: #0ff;
-            padding: 8px 20px;
-            border-radius: 40px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .size-btn.active {
-            background: #0ff;
-            color: #000;
-            border-color: #f0f;
-            box-shadow: 0 0 15px #0ff;
-        }
-        .stats-panel {
-            display: flex;
-            justify-content: space-between;
-            background: #03050ad9;
-            padding: 10px 16px;
-            border-radius: 20px;
-            margin-bottom: 20px;
-            border: 1px solid #f0f;
-        }
-        .stat {
-            text-align: center;
-            flex: 1;
-        }
-        .stat-label {
-            font-size: 0.65rem;
-            color: #ff66cc;
-        }
-        .stat-value {
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: #0ff;
-            text-shadow: 0 0 6px #0ff;
-        }
-        #errorCount { color: #ff3366; }
-        .grid {
-            display: grid;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        .cell {
-            aspect-ratio: 1;
-            background: #0d1020;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 1.5rem;
-            font-family: monospace;
-            color: #0ff;
-            cursor: pointer;
-            border: 1px solid #33ccff;
-            box-shadow: 0 0 6px #0ff;
-        }
-        .cell:active { transform: scale(0.97); }
-        .cell.completed {
-            background: #0a1f2a;
-            border-color: #f0f;
-            color: #f6f;
-            text-decoration: line-through;
-        }
-        .cell.error-flash {
-            animation: shake 0.2s ease 0s 2;
-            background-color: #ff3366;
-        }
-        @keyframes shake {
-            0% { transform: translateX(0); background: #ff3366; }
-            50% { transform: translateX(5px); background: #ff3366; }
-            100% { transform: translateX(0); background: #ff3366; }
-        }
-        .cell.flash-pink { background: #ff00aa !important; box-shadow: 0 0 30px #ff00aa !important; }
-        .cell.flash-blue { background: #00ccff !important; box-shadow: 0 0 30px #00ccff !important; }
-        .cell.flash-purple { background: #b000ff !important; box-shadow: 0 0 30px #b000ff !important; }
-        .control-bar {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
-            margin: 16px 0;
-        }
-        .btn {
-            background: #10131f;
-            border: 1px solid #0ff;
-            padding: 10px 20px;
-            border-radius: 60px;
-            color: #0ff;
-            font-weight: bold;
-            cursor: pointer;
-            flex: 0.45;
-            text-align: center;
-        }
-        .btn-primary { background: #0ff; color: #000; border-color: #f0f; }
-        .leaderboard-section {
-            margin-top: 24px;
-            background: #03050acc;
-            border-radius: 20px;
-            padding: 12px;
-            border: 1px solid #0ff;
-        }
-        .leaderboard-title {
-            color: #f0f;
-            text-align: center;
-            font-size: 1rem;
-            margin-bottom: 10px;
-        }
-        .rank-list {
-            max-height: 200px;
-            overflow-y: auto;
-            font-size: 0.8rem;
-        }
-        .rank-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px 10px;
-            border-bottom: 1px solid #33ccff33;
-            color: #0ff;
-        }
-        .rank-item.highlight {
-            background: #0ff22a;
-            color: #000;
-            font-weight: bold;
-            border-radius: 8px;
-        }
-        .rank-num { width: 40px; }
-        .rank-name { flex: 2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .rank-time { width: 70px; text-align: right; }
-        .completion-message {
-            text-align: center;
-            background: #0a101fcc;
-            padding: 8px;
-            border-radius: 30px;
-            color: #0ff;
-            margin-top: 10px;
-        }
-        footer {
-            font-size: 0.6rem;
-            text-align: center;
-            margin-top: 16px;
-            color: #77aaff;
-        }
-        @media (max-width: 480px) {
-            .cell { font-size: 1.2rem; }
-            .stat-value { font-size: 1.3rem; }
-        }
-    </style>
-    <script src="https://static.line-scdn.net/liff/edge/versions/2.23.1/sdk.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thunder 舒爾特方格</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui, sans-serif}
+body{background:#0a0b13;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 10px;color:#fff}
+h1{font-size:48px;color:#419eff;text-shadow:0 0 15px #419eff,0 0 30px #419eff77;margin-bottom:25px}
+.user-bar{width:100%;max-width:480px;background:#111320;border-radius:30px;padding:12px 20px;display:flex;align-items:center;gap:12px;border:2px solid #4af0ff;box-shadow:0 0 12px #4af0ff66, inset 0 0 8px #4af0ff33;margin-bottom:20px}
+.avatar{width:55px;height:55px;border-radius:50%;border:2px solid #d941ff;box-shadow:0 0 10px #d941ff}
+.mode-group{display:flex;gap:12px;margin-bottom:18px}
+.mode-btn{width:100px;padding:12px;border-radius:18px;border:2px solid #4af0ff55;background:#151724;color:#fff;font-size:18px;cursor:pointer;transition:0.2s}
+.mode-btn.active{background:#4af0ff;color:#000;border-color:#d941ff;box-shadow:0 0 15px #4af0ff, 0 0 25px #d941ff88}
+.status-bar{width:100%;max-width:480px;background:#111320;border-radius:18px;border:1px solid #d941ff77;box-shadow:0 0 10px #d941ff44;display:flex;justify-content:space-around;padding:15px;margin-bottom:20px}
+.stat-item{text-align:center}
+.stat-label{font-size:14px;opacity:0.75}
+.stat-value{font-size:28px;color:#4af0ff;text-shadow:0 0 8px #4af0ff}
+.error-val{color:#ff4757;text-shadow:0 0 8px #ff4757}
+.grid-container{width:100%;max-width:480px;aspect-ratio:1;display:grid;gap:10px;padding:10px}
+.grid-cell{background:#151724;border-radius:14px;border:1px solid #4af0ff70;display:flex;align-items:center;justify-content:center;font-size:clamp(22px,5vw,32px);font-weight:bold;color:#4af0ff;text-shadow:0 0 6px #4af0ff;cursor:pointer;transition:0.12s}
+.grid-cell:hover{transform:scale(1.05);box-shadow:0 0 12px #4af0ff99}
+.grid-cell.wrong{background:#ff334444;border-color:#ff3344;animation:shake 0.3s}
+.grid-cell.correct{background:#22ff8844;border-color:#22ff88}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.leaderboard{margin-top:25px;width:100%;max-width:480px;background:#111320;border-radius:18px;border:1px solid #d941ff77;padding:18px}
+.leaderboard h3{text-align:center;color:#d941ff;margin-bottom:12px}
+.rank-title{color:#4af0ff;margin:12px 0 6px;font-weight:bold}
+.rank-row{display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #ffffff15;font-size:14px}
+</style>
 </head>
 <body>
-<div class="game-container">
-    <div class="profile-area">
-        <img id="avatarImg" class="avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23333'%3E%3Ccircle cx='12' cy='8' r='4' fill='%23666'/%3E%3Cpath d='M12 14c-4 0-6 2-6 4h12c0-2-2-4-6-4z' fill='%23666'/%3E%3C/svg%3E">
-        <div class="user-info">
-            <div class="user-name" id="userName">載入中...</div>
-            <div class="user-status">🌍 全球排行榜</div>
-        </div>
-    </div>
 
-    <div class="size-selector">
-        <button class="size-btn" data-size="3">3x3</button>
-        <button class="size-btn active" data-size="5">5x5</button>
-        <button class="size-btn" data-size="6">6x6</button>
-    </div>
+<h1>Thunder</h1>
 
-    <div class="stats-panel">
-        <div class="stat"><div class="stat-label">⏱️ 時間</div><div class="stat-value" id="timerDisplay">0.00</div></div>
-        <div class="stat"><div class="stat-label">🏆 最佳</div><div class="stat-value" id="bestDisplay">--</div></div>
-        <div class="stat"><div class="stat-label">❌ 錯誤</div><div class="stat-value" id="errorCount">0</div></div>
-    </div>
+<div class="user-bar">
+  <img class="avatar" id="userAvatar" src="" alt="">
+  <div>
+    <div id="userName">訪客模式</div>
+    <div style="opacity:0.7;font-size:14px;">🌍 全球獨立排行榜</div>
+  </div>
+</div>
 
-    <div class="grid" id="grid"></div>
+<div class="mode-group">
+  <button class="mode-btn" data-size="3">3x3</button>
+  <button class="mode-btn active" data-size="5">5x5</button>
+  <button class="mode-btn" data-size="6">6x6</button>
+</div>
 
-    <div class="control-bar">
-        <button class="btn" id="resetBtn">⟳ 新的一局</button>
-        <button class="btn btn-primary" id="shuffleBtn">🌀 重新洗牌</button>
-    </div>
-    <div id="messageArea" class="completion-message" style="display: none;"></div>
+<div class="status-bar">
+  <div class="stat-item">
+    <div class="stat-label">⏱️ 時間</div>
+    <div class="stat-value" id="timeDisplay">0.00</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label">🏆 最佳</div>
+    <div class="stat-value" id="bestDisplay">--</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label">❌ 錯誤</div>
+    <div class="stat-value error-val" id="errorDisplay">0</div>
+  </div>
+</div>
 
-    <div class="leaderboard-section">
-        <div class="leaderboard-title" id="leaderboardTitle">🏆 全球排行榜 (5x5) 🏆</div>
-        <div id="rankList" class="rank-list">載入中...</div>
-    </div>
-    <footer>依序點擊 1 → N | 誰說練專注力一定要很無聊？這款超簡單的小遊戲，只要按順序點擊數字，就能邊玩邊提升反應力、鍛煉視野！</footer>
+<!-- 方格容器 這裡一定會正常顯示 -->
+<div class="grid-container" id="gameGrid"></div>
+
+<div class="leaderboard">
+  <h3>🌐 全球排行</h3>
+  <div class="rank-title">⚡ 3x3 榜單</div>
+  <div id="rankList3"></div>
+  <div class="rank-title">⚡ 5x5 榜單</div>
+  <div id="rankList5"></div>
+  <div class="rank-title">⚡ 6x6 榜單</div>
+  <div id="rankList6"></div>
 </div>
 
 <script>
-    // ========== 全域變數 ==========
-    const LIFF_ID = '2010026891-2ZVWS0Ib';
-    const SUPABASE_URL = 'https://vwmvdrvxaehcnzznfnlj.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_vAVRA_69valBP0iF_eY2qQ_wKCvxmMi';
-    
-    // 安全建立 Supabase 客戶端（修正變數名稱）
-    let supabase = null;
-    try {
-        if (typeof supabaseJs !== 'undefined') {
-            supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        } else if (typeof supabaseCreateClient !== 'undefined') {
-            supabase = supabaseCreateClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        } else if (window.supabase) {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        } else {
-            console.warn('Supabase 未載入，排行榜功能將無法使用');
-        }
-    } catch(e) {
-        console.error('Supabase 初始化失敗', e);
+// 你的配置 完全沒動
+const LIFF_ID = "2010026891-2ZVWSOlb";
+const SUPABASE_URL = "https://vwmvdrvxaehcnzznfnlj.supabase.co";
+const SUPABASE_KEY = "sb_publishable_vAVRA_69valBP0iF_eY2qQ_wKCvxmMi";
+
+// 初始化
+const { createClient } = supabase;
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let lineUser = null;
+let gridSize = 5;
+let currentTarget = 1;
+let startTime = null;
+let timer = null;
+let errorCount = 0;
+
+// 音效
+const audioClick = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-jump-coin-216.mp3");
+const audioWrong = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-wrong-buzzer-game-notification-294.mp3");
+
+// 【修復】頁面載入完強制先渲染遊戲，不再空白
+initGame();
+renderAllRank();
+
+// LINE 登入
+liff.init({ liffId: LIFF_ID }).then(() => {
+  if(liff.isLoggedIn()){
+    liff.getProfile().then(profile=>{
+      lineUser = profile;
+      document.getElementById("userAvatar").src = lineUser.pictureUrl;
+      document.getElementById("userName").innerText = lineUser.displayName;
+      renderAllRank();
+    })
+  }else{
+    liff.login();
+  }
+}).catch(e=>console.log("LINE登入跳過",e));
+
+
+// 遊戲核心
+async function initGame(){
+  currentTarget = 1;
+  errorCount = 0;
+  startTime = null;
+  clearInterval(timer);
+
+  document.getElementById("timeDisplay").innerText = "0.00";
+  document.getElementById("errorDisplay").innerText = "0";
+  document.getElementById("bestDisplay").innerText = "--";
+
+  // 生成隨機數字
+  const total = gridSize * gridSize;
+  let numbers = Array.from({length:total}, (_,i)=>i+1);
+  numbers.sort(()=> Math.random() - 0.5);
+
+  // 繪製方格
+  const grid = document.getElementById("gameGrid");
+  grid.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+  grid.innerHTML = "";
+
+  numbers.forEach(num=>{
+    const cell = document.createElement("div");
+    cell.className = "grid-cell";
+    cell.innerText = num;
+    cell.onclick = () => clickCell(num, cell);
+    grid.appendChild(cell);
+  });
+
+  // 讀取個人最佳
+  if(lineUser){
+    const {data} = await supabase
+      .from("game_rank")
+      .select("cost_time")
+      .eq("user_name", lineUser.displayName)
+      .eq("grid_size", gridSize)
+      .order("cost_time", {ascending:true})
+      .limit(1);
+    if(data.length>0) document.getElementById("bestDisplay").innerText = data[0].cost_time;
+  }
+}
+
+// 點擊邏輯
+async function clickCell(num, el){
+  if(!startTime){
+    startTime = Date.now();
+    timer = setInterval(()=>{
+      const now = ((Date.now() - startTime)/1000).toFixed(2);
+      document.getElementById("timeDisplay").innerText = now;
+    },10)
+  }
+
+  if(num === currentTarget){
+    audioClick.play();
+    el.classList.add("correct");
+    currentTarget++;
+
+    // 通關
+    if(currentTarget > gridSize*gridSize){
+      clearInterval(timer);
+      const finalTime = ((Date.now()-startTime)/1000).toFixed(2);
+      alert(`🎉 通關！用時 ${finalTime} 秒`);
+
+      // 上傳成績
+      if(lineUser){
+        await supabase.from("game_rank").insert([{
+          user_name: lineUser.displayName,
+          user_avatar: lineUser.pictureUrl,
+          grid_size: gridSize,
+          cost_time: parseFloat(finalTime)
+        }])
+      }
+
+      initGame();
+      renderAllRank();
     }
-    
-    // ========== 遊戲核心 ==========
-    let currentSize = 5;
-    let currentGrid = [];
-    let nextNumber = 1;
-    let gameActive = true;
-    let startTime = null;
-    let timerInterval = null;
-    let errorCount = 0;
-    let colorCount = 0;
-    let bestTimes = { 3: null, 5: null, 6: null };
-    let lineUserId = null;
-    let lineDisplayName = '訪客';
-    let lineAvatarUrl = '';
-    
-    // DOM 元素
-    const gridEl = document.getElementById('grid');
-    const timerEl = document.getElementById('timerDisplay');
-    const bestEl = document.getElementById('bestDisplay');
-    const errorEl = document.getElementById('errorCount');
-    const messageEl = document.getElementById('messageArea');
-    const resetBtn = document.getElementById('resetBtn');
-    const shuffleBtn = document.getElementById('shuffleBtn');
-    const sizeBtns = document.querySelectorAll('.size-btn');
-    
-    // 工具函數
-    function shuffleArray(arr) {
-        for (let i = arr.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-        return arr;
-    }
-    
-    function generateGrid(size) {
-        const total = size * size;
-        const numbers = Array.from({ length: total }, (_, i) => i + 1);
-        return shuffleArray(numbers);
-    }
-    
-    function updateBestUI() {
-        const best = bestTimes[currentSize];
-        bestEl.innerText = (best && best < 999) ? best.toFixed(2) : '--';
-    }
-    
-    function stopTimer() {
-        if (timerInterval) clearInterval(timerInterval);
-        timerInterval = null;
-    }
-    
-    function startTimer() {
-        if (startTime !== null) return;
-        startTime = Date.now();
-        timerInterval = setInterval(() => {
-            if (gameActive && startTime) {
-                const elapsed = (Date.now() - startTime) / 1000;
-                timerEl.innerText = elapsed.toFixed(2);
-            }
-        }, 100);
-    }
-    
-    function renderGrid() {
-        if (!gridEl) return;
-        gridEl.style.gridTemplateColumns = `repeat(${currentSize}, 1fr)`;
-        gridEl.innerHTML = '';
-        for (let i = 0; i < currentGrid.length; i++) {
-            const num = currentGrid[i];
-            const cell = document.createElement('div');
-            cell.className = 'cell';
-            if (num < nextNumber) cell.classList.add('completed');
-            cell.textContent = num;
-            cell.onclick = () => handleCellClick(i, cell);
-            gridEl.appendChild(cell);
-        }
-    }
-    
-    function flashCell(cell) {
-        const colors = ['flash-pink', 'flash-blue', 'flash-purple'];
-        const color = colors[colorCount % 3];
-        colorCount++;
-        cell.classList.add(color);
-        setTimeout(() => cell.classList.remove(color), 200);
-    }
-    
-    async function uploadRecord(size, seconds) {
-        if (!supabase || !lineUserId) return;
-        try {
-            const field = `best_time_${size}`;
-            await supabase.from('leaderboard').upsert({
-                line_user_id: lineUserId,
-                display_name: lineDisplayName,
-                avatar_url: lineAvatarUrl,
-                [field]: seconds,
-                updated_at: new Date()
-            }, { onConflict: 'line_user_id' });
-        } catch(e) { console.error('上傳失敗', e); }
-    }
-    
-    async function loadRanking(size) {
-        if (!supabase) return;
-        try {
-            const { data } = await supabase.from('leaderboard')
-                .select('display_name, best_time_' + size)
-                .not(`best_time_${size}`, 'is', null)
-                .order(`best_time_${size}`, { ascending: true })
-                .limit(20);
-            const rankDiv = document.getElementById('rankList');
-            if (!data || data.length === 0) {
-                rankDiv.innerHTML = '<div style="color:#888">暫無紀錄，快來成為第一名！</div>';
-                return;
-            }
-            rankDiv.innerHTML = data.map((row, idx) => {
-                const time = row[`best_time_${size}`];
-                const isMe = row.display_name === lineDisplayName;
-                return `<div class="rank-item ${isMe ? 'highlight' : ''}">
-                    <span class="rank-num">${idx+1}</span>
-                    <span class="rank-name">${escapeHtml(row.display_name || '玩家')}</span>
-                    <span class="rank-time">${time.toFixed(2)}s</span>
-                </div>`;
-            }).join('');
-            document.getElementById('leaderboardTitle').innerHTML = `🏆 全球排行榜 (${size}x${size}) 🏆`;
-        } catch(e) { console.error('排行榜錯誤', e); }
-    }
-    
-    function escapeHtml(str) {
-        if (!str) return '玩家';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-    
-    async function finishGame(seconds) {
-        gameActive = false;
-        stopTimer();
-        let isNewRecord = false;
-        if (!bestTimes[currentSize] || seconds < bestTimes[currentSize]) {
-            bestTimes[currentSize] = seconds;
-            isNewRecord = true;
-            await uploadRecord(currentSize, seconds);
-            await loadRanking(currentSize);
-            updateBestUI();
-        }
-        messageEl.style.display = 'block';
-        messageEl.innerHTML = `✨ 完成！ ${seconds.toFixed(2)} 秒 ${isNewRecord ? '🎉 新紀錄已上傳！ 🎉' : ''}`;
-        setTimeout(() => { messageEl.style.display = 'none'; }, 3000);
-    }
-    
-    function handleCellClick(index, cell) {
-        if (!gameActive) return;
-        const clickedNum = currentGrid[index];
-        if (clickedNum === nextNumber) {
-            flashCell(cell);
-            if (nextNumber === 1 && startTime === null) startTimer();
-            cell.classList.add('completed');
-            nextNumber++;
-            if (nextNumber > currentSize * currentSize) {
-                const finalTime = (Date.now() - startTime) / 1000;
-                finishGame(finalTime);
-            }
-        } else {
-            errorCount++;
-            errorEl.innerText = errorCount;
-            cell.classList.add('error-flash');
-            setTimeout(() => cell.classList.remove('error-flash'), 300);
-        }
-    }
-    
-    function resetGame() {
-        stopTimer();
-        messageEl.style.display = 'none';
-        currentGrid = generateGrid(currentSize);
-        nextNumber = 1;
-        errorCount = 0;
-        errorEl.innerText = '0';
-        gameActive = true;
-        startTime = null;
-        timerEl.innerText = '0.00';
-        renderGrid();
-        colorCount = 0;
-    }
-    
-    function shuffleGame() {
-        stopTimer();
-        messageEl.style.display = 'none';
-        currentGrid = generateGrid(currentSize);
-        nextNumber = 1;
-        errorCount = 0;
-        errorEl.innerText = '0';
-        gameActive = true;
-        startTime = null;
-        timerEl.innerText = '0.00';
-        renderGrid();
-        colorCount = 0;
-    }
-    
-    function changeSize(size) {
-        if (size === currentSize) return;
-        currentSize = size;
-        sizeBtns.forEach(btn => {
-            if (parseInt(btn.dataset.size) === size) btn.classList.add('active');
-            else btn.classList.remove('active');
-        });
-        currentGrid = generateGrid(size);
-        nextNumber = 1;
-        errorCount = 0;
-        errorEl.innerText = '0';
-        gameActive = true;
-        startTime = null;
-        timerEl.innerText = '0.00';
-        stopTimer();
-        renderGrid();
-        loadRanking(size);
-    }
-    
-    // ========== LIFF 初始化 ==========
-    async function initLIFF() {
-        try {
-            console.log('初始化 LIFF...');
-            await liff.init({ liffId: LIFF_ID });
-            console.log('LIFF 成功');
-            if (!liff.isLoggedIn()) {
-                console.log('未登入，執行登入');
-                liff.login();
-                return;
-            }
-            const profile = await liff.getProfile();
-            lineUserId = profile.userId;
-            lineDisplayName = profile.displayName;
-            lineAvatarUrl = profile.pictureUrl;
-            document.getElementById('userName').innerHTML = lineDisplayName;
-            const avatarImg = document.getElementById('avatarImg');
-            if (avatarImg && lineAvatarUrl) avatarImg.src = lineAvatarUrl;
-            // 讀取個人最佳
-            if (supabase) {
-                const { data } = await supabase.from('leaderboard')
-                    .select('best_time_3, best_time_5, best_time_6')
-                    .eq('line_user_id', lineUserId)
-                    .single();
-                if (data) {
-                    bestTimes = { 3: data.best_time_3, 5: data.best_time_5, 6: data.best_time_6 };
-                    updateBestUI();
-                }
-                await loadRanking(currentSize);
-            }
-        } catch(err) {
-            console.error('LIFF 錯誤', err);
-            document.getElementById('userName').innerHTML = '請重新登入';
-        }
-    }
-    
-    // ========== 啟動遊戲 ==========
-    function initGame() {
-        currentSize = 5;
-        currentGrid = generateGrid(5);
-        renderGrid();
-        updateBestUI();
-        resetBtn.onclick = resetGame;
-        shuffleBtn.onclick = shuffleGame;
-        sizeBtns.forEach(btn => {
-            btn.onclick = () => changeSize(parseInt(btn.dataset.size));
-        });
-    }
-    
-    window.addEventListener('load', async () => {
-        initGame();
-        if (typeof liff !== 'undefined') {
-            await initLIFF();
-        } else {
-            document.getElementById('userName').innerHTML = 'LIFF 未載入';
-        }
-    });
+
+  }else{
+    audioWrong.play();
+    el.classList.add("wrong");
+    setTimeout(()=>el.classList.remove("wrong"),300);
+    errorCount++;
+    document.getElementById("errorDisplay").innerText = errorCount;
+  }
+}
+
+// 難度切換
+document.querySelectorAll(".mode-btn").forEach(btn=>{
+  btn.addEventListener("click", async ()=>{
+    document.querySelector(".mode-btn.active").classList.remove("active");
+    btn.classList.add("active");
+    gridSize = parseInt(btn.dataset.size);
+    await initGame();
+  })
+})
+
+// 排行榜
+async function renderRankBySize(size, domId){
+  const {data} = await supabase
+    .from("game_rank")
+    .select("*")
+    .eq("grid_size", size)
+    .order("cost_time", {ascending:true})
+    .limit(20);
+
+  const el = document.getElementById(domId);
+  if(!data.length){
+    el.innerHTML = `<div class="rank-row">暫無紀錄</div>`;
+    return;
+  }
+
+  el.innerHTML = "";
+  data.forEach((item, idx)=>{
+    el.innerHTML += `<div class="rank-row">
+      <span>${idx+1}. ${item.user_name}</span>
+      <span>${item.cost_time} 秒</span>
+    </div>`
+  })
+}
+
+async function renderAllRank(){
+  await renderRankBySize(3,"rankList3");
+  await renderRankBySize(5,"rankList5");
+  await renderRankBySize(6,"rankList6");
+}
+
 </script>
+
 </body>
 </html>
