@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>舒爾特方格 · 全球排行榜</title>
+    <title>⚡ 舒爾特方格 · 全球排行榜</title>
     <style>
         * {
             box-sizing: border-box;
@@ -245,20 +245,32 @@
         <div class="leaderboard-title" id="leaderboardTitle">🏆 全球排行榜 (5x5) 🏆</div>
         <div id="rankList" class="rank-list">載入中...</div>
     </div>
-    <footer>誰說練專注力一定要很無聊？這款超簡單的小遊戲，只要按順序點擊數字，就能邊玩邊提升反應力、鍛煉視野！快挑戰你的極限速度吧！
-</footer>
+    <footer>依序點擊 1 → N | 誰說練專注力一定要很無聊？這款超簡單的小遊戲，只要按順序點擊數字，就能邊玩邊提升反應力、鍛煉視野！</footer>
 </div>
 
 <script>
-    // ========== 設定 ==========
+    // ========== 全域變數 ==========
     const LIFF_ID = '2010026891-2ZVWS0Ib';
     const SUPABASE_URL = 'https://vwmvdrvxaehcnzznfnlj.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_vAVRA_69valBP0iF_eY2qQ_wKCvxmMi';
     
-    // Supabase 客戶端
-    const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // 安全建立 Supabase 客戶端（修正變數名稱）
+    let supabase = null;
+    try {
+        if (typeof supabaseJs !== 'undefined') {
+            supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } else if (typeof supabaseCreateClient !== 'undefined') {
+            supabase = supabaseCreateClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } else if (window.supabase) {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } else {
+            console.warn('Supabase 未載入，排行榜功能將無法使用');
+        }
+    } catch(e) {
+        console.error('Supabase 初始化失敗', e);
+    }
     
-    // ========== 遊戲狀態 ==========
+    // ========== 遊戲核心 ==========
     let currentSize = 5;
     let currentGrid = [];
     let nextNumber = 1;
@@ -269,7 +281,7 @@
     let colorCount = 0;
     let bestTimes = { 3: null, 5: null, 6: null };
     let lineUserId = null;
-    let lineDisplayName = '玩家';
+    let lineDisplayName = '訪客';
     let lineAvatarUrl = '';
     
     // DOM 元素
@@ -282,7 +294,7 @@
     const shuffleBtn = document.getElementById('shuffleBtn');
     const sizeBtns = document.querySelectorAll('.size-btn');
     
-    // ========== 工具函數 ==========
+    // 工具函數
     function shuffleArray(arr) {
         for (let i = arr.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -299,14 +311,12 @@
     
     function updateBestUI() {
         const best = bestTimes[currentSize];
-        bestEl.innerText = best ? best.toFixed(2) : '--';
+        bestEl.innerText = (best && best < 999) ? best.toFixed(2) : '--';
     }
     
     function stopTimer() {
-        if (timerInterval) {
-            clearInterval(timerInterval);
-            timerInterval = null;
-        }
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = null;
     }
     
     function startTimer() {
@@ -321,6 +331,7 @@
     }
     
     function renderGrid() {
+        if (!gridEl) return;
         gridEl.style.gridTemplateColumns = `repeat(${currentSize}, 1fr)`;
         gridEl.innerHTML = '';
         for (let i = 0; i < currentGrid.length; i++) {
@@ -343,44 +354,43 @@
     }
     
     async function uploadRecord(size, seconds) {
-        if (!lineUserId) return;
-        const field = `best_time_${size}`;
-        await supabase.from('leaderboard').upsert({
-            line_user_id: lineUserId,
-            display_name: lineDisplayName,
-            avatar_url: lineAvatarUrl,
-            [field]: seconds,
-            updated_at: new Date()
-        }, { onConflict: 'line_user_id' });
+        if (!supabase || !lineUserId) return;
+        try {
+            const field = `best_time_${size}`;
+            await supabase.from('leaderboard').upsert({
+                line_user_id: lineUserId,
+                display_name: lineDisplayName,
+                avatar_url: lineAvatarUrl,
+                [field]: seconds,
+                updated_at: new Date()
+            }, { onConflict: 'line_user_id' });
+        } catch(e) { console.error('上傳失敗', e); }
     }
     
     async function loadRanking(size) {
+        if (!supabase) return;
         try {
             const { data } = await supabase.from('leaderboard')
                 .select('display_name, best_time_' + size)
                 .not(`best_time_${size}`, 'is', null)
                 .order(`best_time_${size}`, { ascending: true })
                 .limit(20);
-            
             const rankDiv = document.getElementById('rankList');
             if (!data || data.length === 0) {
                 rankDiv.innerHTML = '<div style="color:#888">暫無紀錄，快來成為第一名！</div>';
                 return;
             }
-            
             rankDiv.innerHTML = data.map((row, idx) => {
                 const time = row[`best_time_${size}`];
                 const isMe = row.display_name === lineDisplayName;
                 return `<div class="rank-item ${isMe ? 'highlight' : ''}">
-                    <span class="rank-num">${idx + 1}</span>
+                    <span class="rank-num">${idx+1}</span>
                     <span class="rank-name">${escapeHtml(row.display_name || '玩家')}</span>
                     <span class="rank-time">${time.toFixed(2)}s</span>
                 </div>`;
             }).join('');
             document.getElementById('leaderboardTitle').innerHTML = `🏆 全球排行榜 (${size}x${size}) 🏆`;
-        } catch(e) {
-            console.error('排行榜錯誤:', e);
-        }
+        } catch(e) { console.error('排行榜錯誤', e); }
     }
     
     function escapeHtml(str) {
@@ -396,7 +406,6 @@
     async function finishGame(seconds) {
         gameActive = false;
         stopTimer();
-        
         let isNewRecord = false;
         if (!bestTimes[currentSize] || seconds < bestTimes[currentSize]) {
             bestTimes[currentSize] = seconds;
@@ -405,24 +414,19 @@
             await loadRanking(currentSize);
             updateBestUI();
         }
-        
         messageEl.style.display = 'block';
         messageEl.innerHTML = `✨ 完成！ ${seconds.toFixed(2)} 秒 ${isNewRecord ? '🎉 新紀錄已上傳！ 🎉' : ''}`;
-        setTimeout(() => {
-            messageEl.style.display = 'none';
-        }, 3000);
+        setTimeout(() => { messageEl.style.display = 'none'; }, 3000);
     }
     
     function handleCellClick(index, cell) {
         if (!gameActive) return;
         const clickedNum = currentGrid[index];
-        
         if (clickedNum === nextNumber) {
             flashCell(cell);
             if (nextNumber === 1 && startTime === null) startTimer();
             cell.classList.add('completed');
             nextNumber++;
-            
             if (nextNumber > currentSize * currentSize) {
                 const finalTime = (Date.now() - startTime) / 1000;
                 finishGame(finalTime);
@@ -467,11 +471,8 @@
         if (size === currentSize) return;
         currentSize = size;
         sizeBtns.forEach(btn => {
-            if (parseInt(btn.dataset.size) === size) {
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
-            }
+            if (parseInt(btn.dataset.size) === size) btn.classList.add('active');
+            else btn.classList.remove('active');
         });
         currentGrid = generateGrid(size);
         nextNumber = 1;
@@ -485,51 +486,38 @@
         loadRanking(size);
     }
     
-    // ========== LIFF 初始化 (重點！) ==========
+    // ========== LIFF 初始化 ==========
     async function initLIFF() {
         try {
-            console.log('開始初始化 LIFF...');
+            console.log('初始化 LIFF...');
             await liff.init({ liffId: LIFF_ID });
-            console.log('LIFF 初始化成功');
-            
+            console.log('LIFF 成功');
             if (!liff.isLoggedIn()) {
                 console.log('未登入，執行登入');
                 liff.login();
                 return;
             }
-            
             const profile = await liff.getProfile();
-            console.log('取得資料成功:', profile);
-            
             lineUserId = profile.userId;
             lineDisplayName = profile.displayName;
             lineAvatarUrl = profile.pictureUrl;
-            
             document.getElementById('userName').innerHTML = lineDisplayName;
             const avatarImg = document.getElementById('avatarImg');
-            if (avatarImg && lineAvatarUrl) {
-                avatarImg.src = lineAvatarUrl;
+            if (avatarImg && lineAvatarUrl) avatarImg.src = lineAvatarUrl;
+            // 讀取個人最佳
+            if (supabase) {
+                const { data } = await supabase.from('leaderboard')
+                    .select('best_time_3, best_time_5, best_time_6')
+                    .eq('line_user_id', lineUserId)
+                    .single();
+                if (data) {
+                    bestTimes = { 3: data.best_time_3, 5: data.best_time_5, 6: data.best_time_6 };
+                    updateBestUI();
+                }
+                await loadRanking(currentSize);
             }
-            
-            // 讀取個人最佳紀錄
-            const { data } = await supabase.from('leaderboard')
-                .select('best_time_3, best_time_5, best_time_6')
-                .eq('line_user_id', lineUserId)
-                .single();
-            
-            if (data) {
-                bestTimes = {
-                    3: data.best_time_3,
-                    5: data.best_time_5,
-                    6: data.best_time_6
-                };
-                updateBestUI();
-            }
-            
-            await loadRanking(5);
-            
-        } catch (err) {
-            console.error('LIFF 錯誤:', err);
+        } catch(err) {
+            console.error('LIFF 錯誤', err);
             document.getElementById('userName').innerHTML = '請重新登入';
         }
     }
@@ -540,7 +528,6 @@
         currentGrid = generateGrid(5);
         renderGrid();
         updateBestUI();
-        
         resetBtn.onclick = resetGame;
         shuffleBtn.onclick = shuffleGame;
         sizeBtns.forEach(btn => {
@@ -548,10 +535,8 @@
         });
     }
     
-    // 頁面載入
     window.addEventListener('load', async () => {
         initGame();
-        
         if (typeof liff !== 'undefined') {
             await initLIFF();
         } else {
