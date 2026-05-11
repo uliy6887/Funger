@@ -1,412 +1,655 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Thunder 舒爾特方格</title>
-<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:system-ui, sans-serif;
-}
-body{
-  background:#0a0b13;
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding:20px 12px;
-  color:#fff;
-}
-h1{
-  font-size:48px;
-  color:#419eff;
-  text-shadow:0 0 15px #419eff,0 0 30px #419eff77;
-  margin-bottom:20px;
-}
-.user-bar{
-  width:100%;
-  max-width:520px;
-  background:#111320;
-  border-radius:30px;
-  padding:12px 20px;
-  display:flex;
-  align-items:center;
-  gap:12px;
-  border:2px solid #4af0ff;
-  box-shadow:0 0 12px #4af0ff66, inset 0 0 8px #4af0ff33;
-  margin-bottom:16px;
-}
-.avatar{
-  width:55px;
-  height:55px;
-  border-radius:50%;
-  border:2px solid #d941ff;
-  box-shadow:0 0 10px #d941ff;
-}
-.mode-group{
-  display:flex;
-  gap:12px;
-  margin-bottom:16px;
-}
-.mode-btn{
-  width:100px;
-  padding:12px;
-  border-radius:18px;
-  border:2px solid #4af0ff55;
-  background:#151724;
-  color:#fff;
-  font-size:18px;
-  cursor:pointer;
-  transition:0.2s;
-}
-.mode-btn.active{
-  background:#4af0ff;
-  color:#000;
-  border-color:#d941ff;
-  box-shadow:0 0 15px #4af0ff, 0 0 25px #d941ff88;
-}
-.status-bar{
-  width:100%;
-  max-width:520px;
-  background:#111320;
-  border-radius:18px;
-  border:1px solid #d941ff77;
-  box-shadow:0 0 10px #d941ff44;
-  display:flex;
-  justify-content:space-around;
-  padding:15px;
-  margin-bottom:20px;
-}
-.stat-item{
-  text-align:center;
-}
-.stat-label{
-  font-size:14px;
-  opacity:0.75;
-}
-.stat-value{
-  font-size:28px;
-  color:#4af0ff;
-  text-shadow:0 0 8px #4af0ff;
-}
-.error-val{
-  color:#ff4757;
-  text-shadow:0 0 8px #ff4757;
-}
-.grid-container{
-  width:100%;
-  max-width:520px;
-  aspect-ratio:1;
-  display:grid;
-  gap:12px;
-  padding:10px;
-  margin-bottom:25px;
-}
-.grid-cell{
-  background:#151724;
-  border-radius:16px;
-  border:1px solid #4af0ff90;
-  box-shadow:0 0 8px #4af0ff50;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:clamp(20px,4vw,30px);
-  font-weight:bold;
-  color:#4af0ff;
-  text-shadow:0 0 6px #4af0ff;
-  cursor:pointer;
-  transition:0.1s;
-}
-.grid-cell:active{
-  transform:scale(0.95);
-}
-.grid-cell.wrong{
-  background:#ff334444;
-  border-color:#ff3344;
-  box-shadow:0 0 8px #ff3344;
-  animation:shake 0.3s;
-}
-.grid-cell.correct{
-  background:#22ff8833;
-  border-color:#22ff88;
-}
-@keyframes shake{
-  0%,100%{transform:translateX(0)}
-  25%{transform:translateX(-3px)}
-  75%{transform:translateX(3px)}
-}
-.bottom-btn-group{
-  width:100%;
-  max-width:520px;
-  display:flex;
-  gap:15px;
-  justify-content:center;
-  margin-bottom:25px;
-}
-.reset-btn{
-  flex:1;
-  max-width:220px;
-  padding:16px;
-  border-radius:25px;
-  border:2px solid #4af0ff70;
-  background:#151724;
-  color:#fff;
-  font-size:18px;
-  cursor:pointer;
-}
-.shuffle-btn{
-  flex:1;
-  max-width:220px;
-  padding:16px;
-  border-radius:25px;
-  border:2px solid #d941ff;
-  background:#4af0ff;
-  color:#000;
-  font-weight:bold;
-  font-size:18px;
-  cursor:pointer;
-  box-shadow:0 0 12px #4af0ff, 0 0 20px #d941ff77;
-}
-.leaderboard{
-  width:100%;
-  max-width:520px;
-  background:#111320;
-  border-radius:18px;
-  border:1px solid #d941ff77;
-  padding:18px;
-}
-.leaderboard h3{
-  text-align:center;
-  color:#d941ff;
-  margin-bottom:12px;
-}
-.rank-title{
-  color:#4af0ff;
-  margin:10px 0 6px;
-  font-weight:bold;
-}
-.rank-row{
-  display:flex;
-  justify-content:space-between;
-  padding:8px 12px;
-  border-bottom:1px solid #ffffff15;
-  font-size:14px;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Thunder · 賽博舒爾特</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(circle at 30% 10%, #0a0718, #02010a);
+            font-family: 'Segoe UI', 'Orbitron', 'Share Tech Mono', system-ui, monospace;
+            padding: 16px;
+        }
+        .game-container {
+            max-width: 620px;
+            margin: 0 auto;
+            background: rgba(5, 8, 20, 0.65);
+            backdrop-filter: blur(8px);
+            border-radius: 48px;
+            padding: 20px 18px 30px;
+            border: 2px solid #0ff;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.6), inset 0 0 12px rgba(0, 255, 255, 0.2);
+        }
+        /* 標題區 */
+        .title-area {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .title-main {
+            font-size: 2.2rem;
+            font-weight: 900;
+            font-family: 'Orbitron', monospace;
+            background: linear-gradient(135deg, #0ff, #f0f);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 8px #0ff;
+            letter-spacing: 4px;
+        }
+        .title-sub {
+            font-size: 0.7rem;
+            color: #aaf;
+            letter-spacing: 2px;
+        }
+        .profile-area {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: #010101bb;
+            padding: 8px 16px;
+            border-radius: 60px;
+            margin-bottom: 20px;
+            border: 1px solid #f0f;
+            box-shadow: 0 0 8px #f0f;
+        }
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #0ff;
+            box-shadow: 0 0 8px #0ff;
+        }
+        .user-name {
+            color: #0ff;
+            font-weight: bold;
+            font-size: 1rem;
+            text-shadow: 0 0 4px #0ff;
+        }
+        .user-status {
+            font-size: 0.7rem;
+            color: #f6f;
+        }
+        .size-selector {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .size-btn {
+            background: #11151f;
+            border: 1.5px solid #0ff;
+            color: #0ff;
+            padding: 8px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: monospace;
+            transition: 0.1s;
+            box-shadow: 0 0 4px #0ff;
+        }
+        .size-btn.active {
+            background: #0ff;
+            color: #000;
+            border-color: #f0f;
+            box-shadow: 0 0 16px #0ff;
+        }
+        .stats-panel {
+            display: flex;
+            justify-content: space-between;
+            background: #03040fd9;
+            padding: 10px 16px;
+            border-radius: 28px;
+            margin-bottom: 20px;
+            border: 1px solid #f0f;
+        }
+        .stat {
+            text-align: center;
+            flex: 1;
+        }
+        .stat-label {
+            font-size: 0.65rem;
+            color: #ff66cc;
+            letter-spacing: 1px;
+        }
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            font-family: 'Orbitron', monospace;
+            color: #0ff;
+            text-shadow: 0 0 6px #0ff;
+        }
+        #errorCount { color: #ff3366; text-shadow: 0 0 4px #ff3366; }
+        .grid {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .cell {
+            aspect-ratio: 1;
+            background: #0a0c1a;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.5rem;
+            font-family: 'Orbitron', monospace;
+            color: #0ff;
+            cursor: pointer;
+            border: 1px solid #33ccff;
+            box-shadow: 0 0 8px #0ff;
+            transition: 0.05s linear;
+        }
+        .cell:active { transform: scale(0.96); }
+        .cell.completed {
+            background: #0a1f2a;
+            border-color: #f0f;
+            color: #f6f;
+            text-decoration: line-through;
+            text-decoration-thickness: 2px;
+            opacity: 0.8;
+        }
+        .cell.error-flash {
+            animation: glitchShake 0.2s ease 0s 2;
+            background-color: #ff2a6d;
+        }
+        @keyframes glitchShake {
+            0% { transform: translateX(0); background-color: #ff2a6d; }
+            50% { transform: translateX(6px); background-color: #ff2a6d; }
+            100% { transform: translateX(0); background-color: #ff2a6d; }
+        }
+        .cell.flash-pink { background: #ff00aa !important; box-shadow: 0 0 28px #ff00aa !important; color: white !important; border-color: #fff !important; }
+        .cell.flash-blue { background: #00ccff !important; box-shadow: 0 0 28px #00ccff !important; color: black !important; }
+        .cell.flash-purple { background: #b000ff !important; box-shadow: 0 0 28px #b000ff !important; color: white !important; }
+        .control-bar {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin: 16px 0;
+        }
+        .btn {
+            background: #10131f;
+            border: 1px solid #0ff;
+            padding: 10px 20px;
+            border-radius: 60px;
+            color: #0ff;
+            font-weight: bold;
+            cursor: pointer;
+            flex: 0.45;
+            text-align: center;
+            font-family: monospace;
+            transition: 0.05s linear;
+        }
+        .btn:active { transform: translateY(2px); }
+        .btn-primary { background: #0ff; color: #000; border-color: #f0f; box-shadow: 0 0 12px #0ff; }
+        .leaderboard-section {
+            margin-top: 24px;
+            background: #03040ccc;
+            border-radius: 28px;
+            padding: 12px;
+            border: 1px solid #0ff;
+        }
+        .leaderboard-title {
+            color: #f0f;
+            text-align: center;
+            font-size: 1rem;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+        .rank-list {
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 0.8rem;
+        }
+        .rank-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 10px;
+            border-bottom: 1px solid #33ccff33;
+            color: #0ff;
+        }
+        .rank-item.highlight {
+            background: #0ff22a;
+            color: #000;
+            font-weight: bold;
+            border-radius: 12px;
+            border-bottom: none;
+        }
+        .rank-num { width: 40px; }
+        .rank-name { flex: 2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .rank-time { width: 70px; text-align: right; }
+        .completion-message {
+            text-align: center;
+            background: #1a0f2acc;
+            padding: 8px;
+            border-radius: 40px;
+            color: #0ff;
+            margin-top: 10px;
+            border-left: 6px solid #0ff;
+            font-weight: bold;
+        }
+        footer {
+            font-size: 0.6rem;
+            text-align: center;
+            margin-top: 16px;
+            color: #88aaff;
+        }
+        @media (max-width: 480px) {
+            .cell { font-size: 1.2rem; }
+            .stat-value { font-size: 1.3rem; }
+        }
+    </style>
+    <script src="https://static.line-scdn.net/liff/edge/versions/2.23.1/sdk.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+<div class="game-container">
+    <div class="title-area">
+        <div class="title-main">⚡ THUNDER ⚡</div>
+        <div class="title-sub">SCHULTE · NEON TRAINER</div>
+    </div>
+    <div class="profile-area">
+        <img id="avatarImg" class="avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23333'%3E%3Ccircle cx='12' cy='8' r='4' fill='%23666'/%3E%3Cpath d='M12 14c-4 0-6 2-6 4h12c0-2-2-4-6-4z' fill='%23666'/%3E%3C/svg%3E">
+        <div class="user-info">
+            <div class="user-name" id="userName">載入中...</div>
+            <div class="user-status">⚡ 全球排行榜</div>
+        </div>
+    </div>
 
-<h1>Thunder</h1>
+    <div class="size-selector">
+        <button class="size-btn" data-size="3">3x3</button>
+        <button class="size-btn active" data-size="5">5x5</button>
+        <button class="size-btn" data-size="6">6x6</button>
+    </div>
 
-<div class="user-bar">
-  <img class="avatar" id="userAvatar" src="" alt="">
-  <div>
-    <div id="userName">訪客模式</div>
-    <div style="opacity:0.7;font-size:14px;">🌍 全球獨立排行榜</div>
-  </div>
-</div>
+    <div class="stats-panel">
+        <div class="stat"><div class="stat-label">⏱️ 時間</div><div class="stat-value" id="timerDisplay">0.00</div></div>
+        <div class="stat"><div class="stat-label">🏆 最佳</div><div class="stat-value" id="bestDisplay">--</div></div>
+        <div class="stat"><div class="stat-label">❌ 錯誤</div><div class="stat-value" id="errorCount">0</div></div>
+    </div>
 
-<div class="mode-group">
-  <button class="mode-btn" data-size="3">3x3</button>
-  <button class="mode-btn active" data-size="5">5x5</button>
-  <button class="mode-btn" data-size="6">6x6</button>
-</div>
+    <div class="grid" id="grid"></div>
 
-<div class="status-bar">
-  <div class="stat-item">
-    <div class="stat-label">⏱️ 時間</div>
-    <div class="stat-value" id="timeDisplay">0.00</div>
-  </div>
-  <div class="stat-item">
-    <div class="stat-label">🏆 最佳</div>
-    <div class="stat-value" id="bestDisplay">--</div>
-  </div>
-  <div class="stat-item">
-    <div class="stat-label">❌ 錯誤</div>
-    <div class="stat-value error-val" id="errorDisplay">0</div>
-  </div>
-</div>
+    <div class="control-bar">
+        <button class="btn" id="resetBtn">⟳ 新的一局</button>
+        <button class="btn btn-primary" id="shuffleBtn">🌀 洗牌</button>
+    </div>
+    <div id="messageArea" class="completion-message" style="display: none;"></div>
 
-<div class="grid-container" id="gameGrid"></div>
-
-<div class="bottom-btn-group">
-  <button class="reset-btn" id="resetBtn">⟳ 重置</button>
-  <button class="shuffle-btn" id="shuffleBtn">🌀 洗牌</button>
-</div>
-
-<div class="leaderboard">
-  <h3>🌐 全球排行</h3>
-  <div class="rank-title">⚡ 3x3 榜單</div>
-  <div id="rankList3">載入中...</div>
-  <div class="rank-title">⚡ 5x5 榜單</div>
-  <div id="rankList5">載入中...</div>
-  <div class="rank-title">⚡ 6x6 榜單</div>
-  <div id="rankList6">載入中...</div>
+    <div class="leaderboard-section">
+        <div class="leaderboard-title" id="leaderboardTitle">🏆 全球排行榜 (5x5) 🏆</div>
+        <div id="rankList" class="rank-list">載入中...</div>
+    </div>
+    <footer>⚡ 依序點擊 1 → N | 雷光回饋 | 紀錄雲端同步</footer>
 </div>
 
 <script>
-// 你的配置
-const LIFF_ID = "2010026891-2ZVWSOlb";
-const SUPABASE_URL = "https://vwmvdrvxaehcnzznfnlj.supabase.co";
-const SUPABASE_KEY = "sb_publishable_vAVRA_69valBP0iF_eY2qQ_wKCvxmMi";
-
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-let lineUser = null;
-let gridSize = 5;
-let currentTarget = 1;
-let startTime = null;
-let timer = null;
-let errorCount = 0;
-
-// 核心繪製方格，優先執行
-function initGame(){
-  currentTarget = 1;
-  errorCount = 0;
-  startTime = null;
-  clearInterval(timer);
-
-  document.getElementById("timeDisplay").innerText = "0.00";
-  document.getElementById("errorDisplay").innerText = "0";
-
-  const total = gridSize * gridSize;
-  const nums = Array.from({length:total}, (_,i) => i + 1);
-  nums.sort(() => Math.random() - 0.5);
-
-  const grid = document.getElementById("gameGrid");
-  grid.style.gridTemplateColumns = `repeat(${gridSize},1fr)`;
-  grid.innerHTML = "";
-
-  nums.forEach(num => {
-    const cell = document.createElement("div");
-    cell.className = "grid-cell";
-    cell.innerText = num;
-    cell.onclick = () => clickCell(num, cell);
-    grid.appendChild(cell);
-  });
-}
-
-// 點擊邏輯
-async function clickCell(num, el){
-  if(!startTime){
-    startTime = Date.now();
-    timer = setInterval(() => {
-      const t = ((Date.now() - startTime) / 1000).toFixed(2);
-      document.getElementById("timeDisplay").innerText = t;
-    },10);
-  }
-
-  if(num === currentTarget){
-    el.classList.add("correct");
-    currentTarget++;
-    if(currentTarget > gridSize * gridSize){
-      clearInterval(timer);
-      const costTime = ((Date.now() - startTime) / 1000).toFixed(2);
-      alert(`通關！用時：${costTime} 秒`);
-      if(lineUser){
-        await uploadScore(costTime);
-        loadBest();
-      }
-      renderAllRank();
-      initGame();
+    // ---------- 設定 (固定) ----------
+    const LIFF_ID = '2010026891-2ZVWS0Ib';           // 您的 LIFF ID
+    const SUPABASE_URL = 'https://vwmvdrvxaehcnzznfnlj.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_vAVRA_69valBP0iF_eY2qQ_wKCvxmMi';
+    
+    // ---------- 全域變數 ----------
+    let supabaseClient = null;
+    let currentSize = 5;
+    let currentGrid = [];
+    let nextNumber = 1;
+    let gameActive = true;
+    let startTime = null;
+    let timerInterval = null;
+    let errorCount = 0;
+    let colorClickCount = 0;
+    let bestTimes = { 3: null, 5: null, 6: null };
+    let lineUserId = null;
+    let lineDisplayName = "訪客";
+    let lineAvatarUrl = "";
+    
+    // DOM 元素
+    const gridEl = document.getElementById('grid');
+    const timerEl = document.getElementById('timerDisplay');
+    const bestEl = document.getElementById('bestDisplay');
+    const errorEl = document.getElementById('errorCount');
+    const resetBtn = document.getElementById('resetBtn');
+    const shuffleBtn = document.getElementById('shuffleBtn');
+    const sizeBtns = document.querySelectorAll('.size-btn');
+    const rankListDiv = document.getElementById('rankList');
+    const leaderboardTitleSpan = document.getElementById('leaderboardTitle');
+    const messageDiv = document.getElementById('messageArea');
+    
+    // ---------- 音效 (Web Audio) ----------
+    let audioCtx = null;
+    function initAudio() {
+        if (!audioCtx && window.AudioContext) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
     }
-  }else{
-    el.classList.add("wrong");
-    setTimeout(()=>el.classList.remove("wrong"),300);
-    errorCount++;
-    document.getElementById("errorDisplay").innerText = errorCount;
-  }
-}
-
-// 上分成績
-async function uploadScore(time){
-  await supabase.from("game_rank").insert({
-    user_name: lineUser.displayName,
-    user_avatar: lineUser.pictureUrl,
-    grid_size: gridSize,
-    cost_time: parseFloat(time)
-  })
-}
-
-// 加載個人最佳
-async function loadBest(){
-  const {data} = await supabase
-    .from("game_rank")
-    .select("cost_time")
-    .eq("user_name", lineUser.displayName)
-    .eq("grid_size", gridSize)
-    .order("cost_time", {ascending:true})
-    .limit(1);
-  document.getElementById("bestDisplay").innerText = data.length ? data[0].cost_time : "--";
-}
-
-// 排行榜渲染
-async function renderRank(size, domId){
-  const {data} = await supabase
-    .from("game_rank")
-    .select("user_name,cost_time")
-    .eq("grid_size", size)
-    .order("cost_time", {ascending:true})
-    .limit(20);
-  
-  const dom = document.getElementById(domId);
-  if(data.length === 0){
-    dom.innerHTML = "<div class='rank-row'>暫無成績</div>";
-    return;
-  }
-  let html = "";
-  data.forEach((item,idx)=>{
-    html += `<div class="rank-row"><span>${idx+1}.${item.user_name}</span><span>${item.cost_time}秒</span></div>`;
-  })
-  dom.innerHTML = html;
-}
-
-async function renderAllRank(){
-  await renderRank(3,"rankList3");
-  await renderRank(5,"rankList5");
-  await renderRank(6,"rankList6");
-}
-
-// 難度切換
-document.querySelectorAll(".mode-btn").forEach(btn=>{
-  btn.onclick = async function(){
-    document.querySelector(".mode-btn.active").classList.remove("active");
-    this.classList.add("active");
-    gridSize = parseInt(this.dataset.size);
-    initGame();
-    if(lineUser) loadBest();
-  }
-})
-
-document.getElementById("resetBtn").onclick = initGame;
-document.getElementById("shuffleBtn").onclick = initGame;
-
-// 延後執行LINE登入，不阻塞方格渲染
-setTimeout(()=>{
-  liff.init({liffId:LIFF_ID}).then(()=>{
-    if(liff.isLoggedIn()){
-      liff.getProfile().then(profile=>{
-        lineUser = profile;
-        document.getElementById("userAvatar").src = profile.pictureUrl;
-        document.getElementById("userName").innerText = profile.displayName;
-        loadBest();
-        renderAllRank();
-      })
-    }else{
-      liff.login();
+    function playCorrect() {
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.value = 1046.5;
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+        osc.start();
+        osc.stop(now + 0.25);
     }
-  })
-},800);
-
-// 頁面載入直接初始化方格
-initGame();
-renderAllRank();
+    function playError() {
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.value = 174.6;
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+        osc.start();
+        osc.stop(now + 0.35);
+    }
+    
+    // ---------- 遊戲核心 ----------
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+    function generateGrid(size) {
+        const total = size * size;
+        const arr = Array.from({ length: total }, (_, i) => i + 1);
+        return shuffleArray(arr);
+    }
+    function updateBestUI() {
+        const best = bestTimes[currentSize];
+        bestEl.innerText = (best && best < 999) ? best.toFixed(2) : '--';
+    }
+    function stopTimer() {
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    function startTimer() {
+        if (startTime !== null) return;
+        startTime = Date.now();
+        timerInterval = setInterval(() => {
+            if (gameActive && startTime) {
+                const elapsed = (Date.now() - startTime) / 1000;
+                timerEl.innerText = elapsed.toFixed(2);
+            }
+        }, 100);
+    }
+    function renderGrid() {
+        if (!gridEl) return;
+        gridEl.style.gridTemplateColumns = `repeat(${currentSize}, 1fr)`;
+        gridEl.innerHTML = '';
+        for (let i = 0; i < currentGrid.length; i++) {
+            const num = currentGrid[i];
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            if (num < nextNumber) cell.classList.add('completed');
+            cell.textContent = num;
+            cell.onclick = (e) => {
+                e.stopPropagation();
+                handleCellClick(i, cell);
+            };
+            gridEl.appendChild(cell);
+        }
+    }
+    function flashCell(cell) {
+        const colors = ['flash-pink', 'flash-blue', 'flash-purple'];
+        const cls = colors[colorClickCount % 3];
+        colorClickCount++;
+        cell.classList.add(cls);
+        setTimeout(() => cell.classList.remove(cls), 180);
+    }
+    
+    // ---------- 雲端排行榜 ----------
+    async function uploadRecord(size, seconds) {
+        if (!supabaseClient || !lineUserId) return;
+        try {
+            const field = `best_time_${size}`;
+            await supabaseClient.from('leaderboard').upsert({
+                line_user_id: lineUserId,
+                display_name: lineDisplayName,
+                avatar_url: lineAvatarUrl,
+                [field]: seconds,
+                updated_at: new Date()
+            }, { onConflict: 'line_user_id' });
+            console.log(`上傳成功 ${size}x${size} : ${seconds}s`);
+        } catch(e) { console.error('上傳錯誤', e); }
+    }
+    async function loadGlobalRank(size) {
+        if (!supabaseClient) {
+            rankListDiv.innerHTML = '<div style="color:#88aaff">連線中⋯</div>';
+            return;
+        }
+        try {
+            const { data, error } = await supabaseClient.from('leaderboard')
+                .select('display_name, best_time_' + size)
+                .not(`best_time_${size}`, 'is', null)
+                .order(`best_time_${size}`, { ascending: true })
+                .limit(20);
+            if (error) throw error;
+            if (!data || data.length === 0) {
+                rankListDiv.innerHTML = '<div style="color:#88aaff">✨ 尙無紀錄，成為雷霆第一人 ✨</div>';
+                return;
+            }
+            rankListDiv.innerHTML = data.map((row, idx) => {
+                const t = row[`best_time_${size}`];
+                const isMe = (row.display_name === lineDisplayName);
+                return `<div class="rank-item ${isMe ? 'highlight' : ''}">
+                    <span class="rank-num">${idx+1}</span>
+                    <span class="rank-name">${escapeHtml(row.display_name || '匿名')}</span>
+                    <span class="rank-time">${t.toFixed(2)}s</span>
+                </div>`;
+            }).join('');
+            leaderboardTitleSpan.innerText = `🏆 全球排行榜 (${size}x${size}) 🏆`;
+        } catch(e) { console.error('排行榜讀取失敗', e); }
+    }
+    function escapeHtml(str) {
+        if (!str) return '玩家';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    // ---------- 遊戲流程 ----------
+    async function finishGame(seconds) {
+        gameActive = false;
+        stopTimer();
+        let isNewRecord = false;
+        if (!bestTimes[currentSize] || seconds < bestTimes[currentSize]) {
+            bestTimes[currentSize] = seconds;
+            isNewRecord = true;
+            // 儲存本地
+            localStorage.setItem(`bestTime_${currentSize}`, seconds);
+            // 上傳雲端
+            await uploadRecord(currentSize, seconds);
+            await loadGlobalRank(currentSize);
+            updateBestUI();
+        }
+        messageDiv.style.display = 'block';
+        messageDiv.innerHTML = `✨ 雷光閃耀！ ${seconds.toFixed(2)} 秒 ${isNewRecord ? '🎉 新紀錄已上傳雲端 🎉' : ''}`;
+        setTimeout(() => { messageDiv.style.display = 'none'; }, 3000);
+    }
+    
+    function handleCellClick(idx, cell) {
+        if (!gameActive) return;
+        const num = currentGrid[idx];
+        if (num === nextNumber) {
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            playCorrect();
+            flashCell(cell);
+            if (nextNumber === 1 && startTime === null) startTimer();
+            cell.classList.add('completed');
+            nextNumber++;
+            if (nextNumber > currentSize * currentSize) {
+                const finalTime = (Date.now() - startTime) / 1000;
+                finishGame(finalTime);
+            }
+        } else {
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            playError();
+            errorCount++;
+            errorEl.innerText = errorCount;
+            cell.classList.add('error-flash');
+            setTimeout(() => cell.classList.remove('error-flash'), 300);
+        }
+    }
+    
+    function resetGame() {
+        stopTimer();
+        messageDiv.style.display = 'none';
+        currentGrid = generateGrid(currentSize);
+        nextNumber = 1;
+        errorCount = 0;
+        errorEl.innerText = '0';
+        gameActive = true;
+        startTime = null;
+        timerEl.innerText = '0.00';
+        renderGrid();
+        colorClickCount = 0;
+    }
+    function shuffleGame() {
+        stopTimer();
+        messageDiv.style.display = 'none';
+        currentGrid = generateGrid(currentSize);
+        nextNumber = 1;
+        errorCount = 0;
+        errorEl.innerText = '0';
+        gameActive = true;
+        startTime = null;
+        timerEl.innerText = '0.00';
+        renderGrid();
+        colorClickCount = 0;
+    }
+    function changeSize(size) {
+        if (size === currentSize) return;
+        currentSize = size;
+        sizeBtns.forEach(btn => {
+            if (parseInt(btn.dataset.size) === size) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+        currentGrid = generateGrid(size);
+        nextNumber = 1;
+        errorCount = 0;
+        errorEl.innerText = '0';
+        gameActive = true;
+        startTime = null;
+        timerEl.innerText = '0.00';
+        stopTimer();
+        renderGrid();
+        updateBestUI();
+        loadGlobalRank(size);
+    }
+    
+    // ---------- LIFF 以及 Supabase 初始化 ----------
+    async function initLIFF() {
+        try {
+            if (typeof liff === 'undefined') {
+                document.getElementById('userName').innerText = '訪客模式';
+                return;
+            }
+            await liff.init({ liffId: LIFF_ID });
+            if (!liff.isLoggedIn()) {
+                document.getElementById('userName').innerText = '請登入 LINE';
+                // 不強迫登入以免打斷遊戲，使用者可手動點登入
+                return;
+            }
+            const profile = await liff.getProfile();
+            lineUserId = profile.userId;
+            lineDisplayName = profile.displayName;
+            lineAvatarUrl = profile.pictureUrl;
+            document.getElementById('userName').innerText = lineDisplayName;
+            const avatarImg = document.getElementById('avatarImg');
+            if (avatarImg && lineAvatarUrl) avatarImg.src = lineAvatarUrl;
+        } catch (err) {
+            console.error('LIFF 錯誤', err);
+            document.getElementById('userName').innerText = '訪客模式';
+        }
+    }
+    function initSupabase() {
+        try {
+            if (typeof supabaseJs !== 'undefined') {
+                supabaseClient = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            } else if (window.supabase) {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            } else {
+                throw new Error('supabaseJs not loaded');
+            }
+            console.log('Supabase ready');
+            return true;
+        } catch(e) {
+            console.error('Supabase init fail', e);
+            rankListDiv.innerHTML = '<div style="color:#ff8888">排行榜離線中</div>';
+            return false;
+        }
+    }
+    
+    async function loadPersonalBestFromCloud() {
+        if (!supabaseClient || !lineUserId) return;
+        try {
+            const { data } = await supabaseClient.from('leaderboard')
+                .select('best_time_3, best_time_5, best_time_6')
+                .eq('line_user_id', lineUserId)
+                .single();
+            if (data) {
+                bestTimes = { 3: data.best_time_3, 5: data.best_time_5, 6: data.best_time_6 };
+                for (let sz of [3,5,6]) {
+                    if (bestTimes[sz]) localStorage.setItem(`bestTime_${sz}`, bestTimes[sz]);
+                }
+                updateBestUI();
+            }
+        } catch(e) { /* 沒有紀錄也正常 */ }
+    }
+    
+    // ---------- 開機啟動 ----------
+    window.addEventListener('load', async () => {
+        // 1. 先初始化基本遊戲 (確保畫面出現!)
+        currentSize = 5;
+        currentGrid = generateGrid(5);
+        renderGrid();
+        bestTimes = {
+            3: localStorage.getItem('bestTime_3') ? parseFloat(localStorage.getItem('bestTime_3')) : null,
+            5: localStorage.getItem('bestTime_5') ? parseFloat(localStorage.getItem('bestTime_5')) : null,
+            6: localStorage.getItem('bestTime_6') ? parseFloat(localStorage.getItem('bestTime_6')) : null
+        };
+        updateBestUI();
+        resetBtn.onclick = resetGame;
+        shuffleBtn.onclick = shuffleGame;
+        sizeBtns.forEach(btn => btn.onclick = () => changeSize(parseInt(btn.dataset.size)));
+        
+        // 2. 音頻等待使用者點擊
+        window.addEventListener('click', function enableAudio() {
+            initAudio();
+            window.removeEventListener('click', enableAudio);
+        }, { once: true });
+        
+        // 3. 背景服務初始化 (LIFF + Supabase)
+        initSupabase();
+        await initLIFF();
+        // 若已登入，讀取雲端個人紀錄與排行榜
+        if (lineUserId && supabaseClient) {
+            await loadPersonalBestFromCloud();
+            await loadGlobalRank(5);
+        } else {
+            rankListDiv.innerHTML = '<div style="color:#88aaff">登入後可查看全球排行榜</div>';
+        }
+    });
 </script>
-
 </body>
 </html>
