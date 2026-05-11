@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Thunder · 賽博舒爾特</title>
+    <title>THUNDER · 賽博舒爾特</title>
     <style>
         * {
             box-sizing: border-box;
@@ -27,7 +27,6 @@
             border: 2px solid #0ff;
             box-shadow: 0 0 30px rgba(0, 255, 255, 0.6), inset 0 0 12px rgba(0, 255, 255, 0.2);
         }
-        /* 標題區 */
         .title-area {
             text-align: center;
             margin-bottom: 12px;
@@ -260,7 +259,7 @@
         <img id="avatarImg" class="avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23333'%3E%3Ccircle cx='12' cy='8' r='4' fill='%23666'/%3E%3Cpath d='M12 14c-4 0-6 2-6 4h12c0-2-2-4-6-4z' fill='%23666'/%3E%3C/svg%3E">
         <div class="user-info">
             <div class="user-name" id="userName">載入中...</div>
-            <div class="user-status">⚡ 全球排行榜</div>
+            <div class="user-status">⚡ 公開排行榜</div>
         </div>
     </div>
 
@@ -288,12 +287,12 @@
         <div class="leaderboard-title" id="leaderboardTitle">🏆 全球排行榜 (5x5) 🏆</div>
         <div id="rankList" class="rank-list">載入中...</div>
     </div>
-    <footer>⚡ 依序點擊 1 → N | 雷光回饋 | 紀錄雲端同步</footer>
+    <footer>⚡ 依序點擊 1 → N | 公開排行榜 · 登入可上傳紀錄</footer>
 </div>
 
 <script>
-    // ---------- 設定 (固定) ----------
-    const LIFF_ID = '2010026891-2ZVWS0Ib';           // 您的 LIFF ID
+    // ---------- 固定設定 ----------
+    const LIFF_ID = '2010026891-2ZVWS0Ib';
     const SUPABASE_URL = 'https://vwmvdrvxaehcnzznfnlj.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_vAVRA_69valBP0iF_eY2qQ_wKCvxmMi';
     
@@ -311,6 +310,7 @@
     let lineUserId = null;
     let lineDisplayName = "訪客";
     let lineAvatarUrl = "";
+    let isLoggedIn = false;
     
     // DOM 元素
     const gridEl = document.getElementById('grid');
@@ -414,9 +414,12 @@
         setTimeout(() => cell.classList.remove(cls), 180);
     }
     
-    // ---------- 雲端排行榜 ----------
+    // ---------- 雲端排行榜 (公開讀取) ----------
     async function uploadRecord(size, seconds) {
-        if (!supabaseClient || !lineUserId) return;
+        if (!supabaseClient || !isLoggedIn || !lineUserId) {
+            console.log("未登入，不上傳紀錄");
+            return false;
+        }
         try {
             const field = `best_time_${size}`;
             await supabaseClient.from('leaderboard').upsert({
@@ -427,8 +430,11 @@
                 updated_at: new Date()
             }, { onConflict: 'line_user_id' });
             console.log(`上傳成功 ${size}x${size} : ${seconds}s`);
-        } catch(e) { console.error('上傳錯誤', e); }
+            return true;
+        } catch(e) { console.error('上傳錯誤', e); return false; }
     }
+    
+    // 公開排行榜 (任何人皆可讀)
     async function loadGlobalRank(size) {
         if (!supabaseClient) {
             rankListDiv.innerHTML = '<div style="color:#88aaff">連線中⋯</div>';
@@ -447,7 +453,8 @@
             }
             rankListDiv.innerHTML = data.map((row, idx) => {
                 const t = row[`best_time_${size}`];
-                const isMe = (row.display_name === lineDisplayName);
+                // 高亮：只有當使用者已登入且名稱相符時才亮顯
+                const isMe = (isLoggedIn && row.display_name === lineDisplayName);
                 return `<div class="rank-item ${isMe ? 'highlight' : ''}">
                     <span class="rank-num">${idx+1}</span>
                     <span class="rank-name">${escapeHtml(row.display_name || '匿名')}</span>
@@ -475,15 +482,22 @@
         if (!bestTimes[currentSize] || seconds < bestTimes[currentSize]) {
             bestTimes[currentSize] = seconds;
             isNewRecord = true;
-            // 儲存本地
             localStorage.setItem(`bestTime_${currentSize}`, seconds);
-            // 上傳雲端
-            await uploadRecord(currentSize, seconds);
-            await loadGlobalRank(currentSize);
             updateBestUI();
+            // 僅在登入時上傳雲端
+            if (isLoggedIn) {
+                await uploadRecord(currentSize, seconds);
+                await loadGlobalRank(currentSize);
+            } else {
+                // 未登入仍更新本地排行榜顯示（不影響雲端）
+                await loadGlobalRank(currentSize);
+            }
+        } else {
+            // 即使沒破紀錄，若登入也更新排行榜確保顯示 (可能其他人更新了)
+            if (isLoggedIn) await loadGlobalRank(currentSize);
         }
         messageDiv.style.display = 'block';
-        messageDiv.innerHTML = `✨ 雷光閃耀！ ${seconds.toFixed(2)} 秒 ${isNewRecord ? '🎉 新紀錄已上傳雲端 🎉' : ''}`;
+        messageDiv.innerHTML = `✨ Thunder ${seconds.toFixed(2)} 秒 ${isNewRecord ? '🎉 新紀錄 🎉' : ''} ${!isLoggedIn && isNewRecord ? ' (登入可保存至雲端)' : ''}`;
         setTimeout(() => { messageDiv.style.display = 'none'; }, 3000);
     }
     
@@ -557,23 +571,23 @@
         loadGlobalRank(size);
     }
     
-    // ---------- LIFF 以及 Supabase 初始化 ----------
+    // ---------- LIFF 輕量化 (不強制登入) + Supabase 初始化 ----------
     async function initLIFF() {
         try {
             if (typeof liff === 'undefined') {
-                document.getElementById('userName').innerText = '訪客模式';
+                document.getElementById('userName').innerText = '訪客模式 · 排行榜公開';
                 return;
             }
             await liff.init({ liffId: LIFF_ID });
             if (!liff.isLoggedIn()) {
-                document.getElementById('userName').innerText = '請登入 LINE';
-                // 不強迫登入以免打斷遊戲，使用者可手動點登入
+                document.getElementById('userName').innerText = '訪客 · 排行榜公開';
                 return;
             }
             const profile = await liff.getProfile();
             lineUserId = profile.userId;
             lineDisplayName = profile.displayName;
             lineAvatarUrl = profile.pictureUrl;
+            isLoggedIn = true;
             document.getElementById('userName').innerText = lineDisplayName;
             const avatarImg = document.getElementById('avatarImg');
             if (avatarImg && lineAvatarUrl) avatarImg.src = lineAvatarUrl;
@@ -582,6 +596,7 @@
             document.getElementById('userName').innerText = '訪客模式';
         }
     }
+    
     function initSupabase() {
         try {
             if (typeof supabaseJs !== 'undefined') {
@@ -601,7 +616,7 @@
     }
     
     async function loadPersonalBestFromCloud() {
-        if (!supabaseClient || !lineUserId) return;
+        if (!supabaseClient || !isLoggedIn || !lineUserId) return;
         try {
             const { data } = await supabaseClient.from('leaderboard')
                 .select('best_time_3, best_time_5, best_time_6')
@@ -614,12 +629,12 @@
                 }
                 updateBestUI();
             }
-        } catch(e) { /* 沒有紀錄也正常 */ }
+        } catch(e) { /* 無雲端紀錄也正常 */ }
     }
     
-    // ---------- 開機啟動 ----------
+    // ---------- 初始化順序：讓遊戲先出現，再載入排行榜與 LIFF ----------
     window.addEventListener('load', async () => {
-        // 1. 先初始化基本遊戲 (確保畫面出現!)
+        // 1. 遊戲本體 (確保立即顯示)
         currentSize = 5;
         currentGrid = generateGrid(5);
         renderGrid();
@@ -633,21 +648,24 @@
         shuffleBtn.onclick = shuffleGame;
         sizeBtns.forEach(btn => btn.onclick = () => changeSize(parseInt(btn.dataset.size)));
         
-        // 2. 音頻等待使用者點擊
+        // 2. 音效 (等待使用者點擊任意處啟用)
         window.addEventListener('click', function enableAudio() {
             initAudio();
             window.removeEventListener('click', enableAudio);
         }, { once: true });
         
-        // 3. 背景服務初始化 (LIFF + Supabase)
+        // 3. Supabase (排行榜)
         initSupabase();
+        
+        // 4. LIFF 登入 (不阻塞，先顯示排行榜預設)
         await initLIFF();
-        // 若已登入，讀取雲端個人紀錄與排行榜
-        if (lineUserId && supabaseClient) {
+        
+        // 5. 載入排行榜 (無論登入與否都會公開顯示)
+        await loadGlobalRank(5);
+        
+        // 6. 如果有登入才載入個人最佳
+        if (isLoggedIn && supabaseClient) {
             await loadPersonalBestFromCloud();
-            await loadGlobalRank(5);
-        } else {
-            rankListDiv.innerHTML = '<div style="color:#88aaff">登入後可查看全球排行榜</div>';
         }
     });
 </script>
