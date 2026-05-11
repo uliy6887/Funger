@@ -7,29 +7,196 @@
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui, sans-serif}
-body{background:#0a0b13;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 10px;color:#fff}
-h1{font-size:48px;color:#419eff;text-shadow:0 0 15px #419eff,0 0 30px #419eff77;margin-bottom:25px}
-.user-bar{width:100%;max-width:480px;background:#111320;border-radius:30px;padding:12px 20px;display:flex;align-items:center;gap:12px;border:2px solid #4af0ff;box-shadow:0 0 12px #4af0ff66, inset 0 0 8px #4af0ff33;margin-bottom:20px}
-.avatar{width:55px;height:55px;border-radius:50%;border:2px solid #d941ff;box-shadow:0 0 10px #d941ff}
-.mode-group{display:flex;gap:12px;margin-bottom:18px}
-.mode-btn{width:100px;padding:12px;border-radius:18px;border:2px solid #4af0ff55;background:#151724;color:#fff;font-size:18px;cursor:pointer;transition:0.2s}
-.mode-btn.active{background:#4af0ff;color:#000;border-color:#d941ff;box-shadow:0 0 15px #4af0ff, 0 0 25px #d941ff88}
-.status-bar{width:100%;max-width:480px;background:#111320;border-radius:18px;border:1px solid #d941ff77;box-shadow:0 0 10px #d941ff44;display:flex;justify-content:space-around;padding:15px;margin-bottom:20px}
-.stat-item{text-align:center}
-.stat-label{font-size:14px;opacity:0.75}
-.stat-value{font-size:28px;color:#4af0ff;text-shadow:0 0 8px #4af0ff}
-.error-val{color:#ff4757;text-shadow:0 0 8px #ff4757}
-.grid-container{width:100%;max-width:480px;aspect-ratio:1;display:grid;gap:10px;padding:10px}
-.grid-cell{background:#151724;border-radius:14px;border:1px solid #4af0ff70;display:flex;align-items:center;justify-content:center;font-size:clamp(22px,5vw,32px);font-weight:bold;color:#4af0ff;text-shadow:0 0 6px #4af0ff;cursor:pointer;transition:0.12s}
-.grid-cell:hover{transform:scale(1.05);box-shadow:0 0 12px #4af0ff99}
-.grid-cell.wrong{background:#ff334444;border-color:#ff3344;animation:shake 0.3s}
-.grid-cell.correct{background:#22ff8844;border-color:#22ff88}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
-.leaderboard{margin-top:25px;width:100%;max-width:480px;background:#111320;border-radius:18px;border:1px solid #d941ff77;padding:18px}
-.leaderboard h3{text-align:center;color:#d941ff;margin-bottom:12px}
-.rank-title{color:#4af0ff;margin:12px 0 6px;font-weight:bold}
-.rank-row{display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #ffffff15;font-size:14px}
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:system-ui, sans-serif;
+}
+body{
+  background:#0a0b13;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:20px 12px;
+  color:#fff;
+}
+h1{
+  font-size:48px;
+  color:#419eff;
+  text-shadow:0 0 15px #419eff,0 0 30px #419eff77;
+  margin-bottom:20px;
+}
+.user-bar{
+  width:100%;
+  max-width:520px;
+  background:#111320;
+  border-radius:30px;
+  padding:12px 20px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  border:2px solid #4af0ff;
+  box-shadow:0 0 12px #4af0ff66, inset 0 0 8px #4af0ff33;
+  margin-bottom:16px;
+}
+.avatar{
+  width:55px;
+  height:55px;
+  border-radius:50%;
+  border:2px solid #d941ff;
+  box-shadow:0 0 10px #d941ff;
+}
+.mode-group{
+  display:flex;
+  gap:12px;
+  margin-bottom:16px;
+}
+.mode-btn{
+  width:100px;
+  padding:12px;
+  border-radius:18px;
+  border:2px solid #4af0ff55;
+  background:#151724;
+  color:#fff;
+  font-size:18px;
+  cursor:pointer;
+  transition:0.2s;
+}
+.mode-btn.active{
+  background:#4af0ff;
+  color:#000;
+  border-color:#d941ff;
+  box-shadow:0 0 15px #4af0ff, 0 0 25px #d941ff88;
+}
+.status-bar{
+  width:100%;
+  max-width:520px;
+  background:#111320;
+  border-radius:18px;
+  border:1px solid #d941ff77;
+  box-shadow:0 0 10px #d941ff44;
+  display:flex;
+  justify-content:space-around;
+  padding:15px;
+  margin-bottom:20px;
+}
+.stat-item{
+  text-align:center;
+}
+.stat-label{
+  font-size:14px;
+  opacity:0.75;
+}
+.stat-value{
+  font-size:28px;
+  color:#4af0ff;
+  text-shadow:0 0 8px #4af0ff;
+}
+.error-val{
+  color:#ff4757;
+  text-shadow:0 0 8px #ff4757;
+}
+.grid-container{
+  width:100%;
+  max-width:520px;
+  aspect-ratio:1;
+  display:grid;
+  gap:12px;
+  padding:10px;
+  margin-bottom:25px;
+}
+.grid-cell{
+  background:#151724;
+  border-radius:16px;
+  border:1px solid #4af0ff90;
+  box-shadow:0 0 8px #4af0ff50;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:clamp(20px,4vw,30px);
+  font-weight:bold;
+  color:#4af0ff;
+  text-shadow:0 0 6px #4af0ff;
+  cursor:pointer;
+  transition:0.1s;
+}
+.grid-cell:active{
+  transform:scale(0.95);
+}
+.grid-cell.wrong{
+  background:#ff334444;
+  border-color:#ff3344;
+  box-shadow:0 0 8px #ff3344;
+  animation:shake 0.3s;
+}
+.grid-cell.correct{
+  background:#22ff8833;
+  border-color:#22ff88;
+}
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  25%{transform:translateX(-3px)}
+  75%{transform:translateX(3px)}
+}
+.bottom-btn-group{
+  width:100%;
+  max-width:520px;
+  display:flex;
+  gap:15px;
+  justify-content:center;
+  margin-bottom:25px;
+}
+.reset-btn{
+  flex:1;
+  max-width:220px;
+  padding:16px;
+  border-radius:25px;
+  border:2px solid #4af0ff70;
+  background:#151724;
+  color:#fff;
+  font-size:18px;
+  cursor:pointer;
+}
+.shuffle-btn{
+  flex:1;
+  max-width:220px;
+  padding:16px;
+  border-radius:25px;
+  border:2px solid #d941ff;
+  background:#4af0ff;
+  color:#000;
+  font-weight:bold;
+  font-size:18px;
+  cursor:pointer;
+  box-shadow:0 0 12px #4af0ff, 0 0 20px #d941ff77;
+}
+.leaderboard{
+  width:100%;
+  max-width:520px;
+  background:#111320;
+  border-radius:18px;
+  border:1px solid #d941ff77;
+  padding:18px;
+}
+.leaderboard h3{
+  text-align:center;
+  color:#d941ff;
+  margin-bottom:12px;
+}
+.rank-title{
+  color:#4af0ff;
+  margin:10px 0 6px;
+  font-weight:bold;
+}
+.rank-row{
+  display:flex;
+  justify-content:space-between;
+  padding:8px 12px;
+  border-bottom:1px solid #ffffff15;
+  font-size:14px;
+}
 </style>
 </head>
 <body>
@@ -65,28 +232,30 @@ h1{font-size:48px;color:#419eff;text-shadow:0 0 15px #419eff,0 0 30px #419eff77;
   </div>
 </div>
 
-<!-- 方格容器 這裡一定會正常顯示 -->
 <div class="grid-container" id="gameGrid"></div>
+
+<div class="bottom-btn-group">
+  <button class="reset-btn" id="resetBtn">⟳ 重置</button>
+  <button class="shuffle-btn" id="shuffleBtn">🌀 洗牌</button>
+</div>
 
 <div class="leaderboard">
   <h3>🌐 全球排行</h3>
   <div class="rank-title">⚡ 3x3 榜單</div>
-  <div id="rankList3"></div>
+  <div id="rankList3">載入中...</div>
   <div class="rank-title">⚡ 5x5 榜單</div>
-  <div id="rankList5"></div>
+  <div id="rankList5">載入中...</div>
   <div class="rank-title">⚡ 6x6 榜單</div>
-  <div id="rankList6"></div>
+  <div id="rankList6">載入中...</div>
 </div>
 
 <script>
-// 你的配置 完全沒動
+// 你的配置
 const LIFF_ID = "2010026891-2ZVWSOlb";
 const SUPABASE_URL = "https://vwmvdrvxaehcnzznfnlj.supabase.co";
 const SUPABASE_KEY = "sb_publishable_vAVRA_69valBP0iF_eY2qQ_wKCvxmMi";
 
-// 初始化
-const { createClient } = supabase;
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let lineUser = null;
 let gridSize = 5;
@@ -95,31 +264,8 @@ let startTime = null;
 let timer = null;
 let errorCount = 0;
 
-// 音效
-const audioClick = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-jump-coin-216.mp3");
-const audioWrong = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-wrong-buzzer-game-notification-294.mp3");
-
-// 【修復】頁面載入完強制先渲染遊戲，不再空白
-initGame();
-renderAllRank();
-
-// LINE 登入
-liff.init({ liffId: LIFF_ID }).then(() => {
-  if(liff.isLoggedIn()){
-    liff.getProfile().then(profile=>{
-      lineUser = profile;
-      document.getElementById("userAvatar").src = lineUser.pictureUrl;
-      document.getElementById("userName").innerText = lineUser.displayName;
-      renderAllRank();
-    })
-  }else{
-    liff.login();
-  }
-}).catch(e=>console.log("LINE登入跳過",e));
-
-
-// 遊戲核心
-async function initGame(){
+// 核心繪製方格，優先執行
+function initGame(){
   currentTarget = 1;
   errorCount = 0;
   startTime = null;
@@ -127,76 +273,49 @@ async function initGame(){
 
   document.getElementById("timeDisplay").innerText = "0.00";
   document.getElementById("errorDisplay").innerText = "0";
-  document.getElementById("bestDisplay").innerText = "--";
 
-  // 生成隨機數字
   const total = gridSize * gridSize;
-  let numbers = Array.from({length:total}, (_,i)=>i+1);
-  numbers.sort(()=> Math.random() - 0.5);
+  const nums = Array.from({length:total}, (_,i) => i + 1);
+  nums.sort(() => Math.random() - 0.5);
 
-  // 繪製方格
   const grid = document.getElementById("gameGrid");
-  grid.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+  grid.style.gridTemplateColumns = `repeat(${gridSize},1fr)`;
   grid.innerHTML = "";
 
-  numbers.forEach(num=>{
+  nums.forEach(num => {
     const cell = document.createElement("div");
     cell.className = "grid-cell";
     cell.innerText = num;
     cell.onclick = () => clickCell(num, cell);
     grid.appendChild(cell);
   });
-
-  // 讀取個人最佳
-  if(lineUser){
-    const {data} = await supabase
-      .from("game_rank")
-      .select("cost_time")
-      .eq("user_name", lineUser.displayName)
-      .eq("grid_size", gridSize)
-      .order("cost_time", {ascending:true})
-      .limit(1);
-    if(data.length>0) document.getElementById("bestDisplay").innerText = data[0].cost_time;
-  }
 }
 
 // 點擊邏輯
 async function clickCell(num, el){
   if(!startTime){
     startTime = Date.now();
-    timer = setInterval(()=>{
-      const now = ((Date.now() - startTime)/1000).toFixed(2);
-      document.getElementById("timeDisplay").innerText = now;
-    },10)
+    timer = setInterval(() => {
+      const t = ((Date.now() - startTime) / 1000).toFixed(2);
+      document.getElementById("timeDisplay").innerText = t;
+    },10);
   }
 
   if(num === currentTarget){
-    audioClick.play();
     el.classList.add("correct");
     currentTarget++;
-
-    // 通關
-    if(currentTarget > gridSize*gridSize){
+    if(currentTarget > gridSize * gridSize){
       clearInterval(timer);
-      const finalTime = ((Date.now()-startTime)/1000).toFixed(2);
-      alert(`🎉 通關！用時 ${finalTime} 秒`);
-
-      // 上傳成績
+      const costTime = ((Date.now() - startTime) / 1000).toFixed(2);
+      alert(`通關！用時：${costTime} 秒`);
       if(lineUser){
-        await supabase.from("game_rank").insert([{
-          user_name: lineUser.displayName,
-          user_avatar: lineUser.pictureUrl,
-          grid_size: gridSize,
-          cost_time: parseFloat(finalTime)
-        }])
+        await uploadScore(costTime);
+        loadBest();
       }
-
-      initGame();
       renderAllRank();
+      initGame();
     }
-
   }else{
-    audioWrong.play();
     el.classList.add("wrong");
     setTimeout(()=>el.classList.remove("wrong"),300);
     errorCount++;
@@ -204,46 +323,89 @@ async function clickCell(num, el){
   }
 }
 
-// 難度切換
-document.querySelectorAll(".mode-btn").forEach(btn=>{
-  btn.addEventListener("click", async ()=>{
-    document.querySelector(".mode-btn.active").classList.remove("active");
-    btn.classList.add("active");
-    gridSize = parseInt(btn.dataset.size);
-    await initGame();
+// 上分成績
+async function uploadScore(time){
+  await supabase.from("game_rank").insert({
+    user_name: lineUser.displayName,
+    user_avatar: lineUser.pictureUrl,
+    grid_size: gridSize,
+    cost_time: parseFloat(time)
   })
-})
+}
 
-// 排行榜
-async function renderRankBySize(size, domId){
+// 加載個人最佳
+async function loadBest(){
   const {data} = await supabase
     .from("game_rank")
-    .select("*")
+    .select("cost_time")
+    .eq("user_name", lineUser.displayName)
+    .eq("grid_size", gridSize)
+    .order("cost_time", {ascending:true})
+    .limit(1);
+  document.getElementById("bestDisplay").innerText = data.length ? data[0].cost_time : "--";
+}
+
+// 排行榜渲染
+async function renderRank(size, domId){
+  const {data} = await supabase
+    .from("game_rank")
+    .select("user_name,cost_time")
     .eq("grid_size", size)
     .order("cost_time", {ascending:true})
     .limit(20);
-
-  const el = document.getElementById(domId);
-  if(!data.length){
-    el.innerHTML = `<div class="rank-row">暫無紀錄</div>`;
+  
+  const dom = document.getElementById(domId);
+  if(data.length === 0){
+    dom.innerHTML = "<div class='rank-row'>暫無成績</div>";
     return;
   }
-
-  el.innerHTML = "";
-  data.forEach((item, idx)=>{
-    el.innerHTML += `<div class="rank-row">
-      <span>${idx+1}. ${item.user_name}</span>
-      <span>${item.cost_time} 秒</span>
-    </div>`
+  let html = "";
+  data.forEach((item,idx)=>{
+    html += `<div class="rank-row"><span>${idx+1}.${item.user_name}</span><span>${item.cost_time}秒</span></div>`;
   })
+  dom.innerHTML = html;
 }
 
 async function renderAllRank(){
-  await renderRankBySize(3,"rankList3");
-  await renderRankBySize(5,"rankList5");
-  await renderRankBySize(6,"rankList6");
+  await renderRank(3,"rankList3");
+  await renderRank(5,"rankList5");
+  await renderRank(6,"rankList6");
 }
 
+// 難度切換
+document.querySelectorAll(".mode-btn").forEach(btn=>{
+  btn.onclick = async function(){
+    document.querySelector(".mode-btn.active").classList.remove("active");
+    this.classList.add("active");
+    gridSize = parseInt(this.dataset.size);
+    initGame();
+    if(lineUser) loadBest();
+  }
+})
+
+document.getElementById("resetBtn").onclick = initGame;
+document.getElementById("shuffleBtn").onclick = initGame;
+
+// 延後執行LINE登入，不阻塞方格渲染
+setTimeout(()=>{
+  liff.init({liffId:LIFF_ID}).then(()=>{
+    if(liff.isLoggedIn()){
+      liff.getProfile().then(profile=>{
+        lineUser = profile;
+        document.getElementById("userAvatar").src = profile.pictureUrl;
+        document.getElementById("userName").innerText = profile.displayName;
+        loadBest();
+        renderAllRank();
+      })
+    }else{
+      liff.login();
+    }
+  })
+},800);
+
+// 頁面載入直接初始化方格
+initGame();
+renderAllRank();
 </script>
 
 </body>
